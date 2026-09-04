@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var APP_URL = 'https://script.google.com/macros/s/AKfycbx7ReYi1OoXTvO2e-FLXczg-Ube0WZcjJSWe8HGlWbQtUof1F-1dOUQ-kqrwZQPjb6D/exec';
+  var APP_URL = './app.html';
   var deferredInstallPrompt = null;
 
   var installButton = document.getElementById('installButton');
@@ -151,19 +151,12 @@
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
-      // Register the service worker using a path computed from the current location.
-      // This makes registration more robust across different hosting setups (root, subpath, dev server).
       try {
         var dir = location.pathname.substring(0, location.pathname.lastIndexOf('/') + 1) || '/';
         var swUrl = dir + 'sw.js';
-        navigator.serviceWorker.register(swUrl, { scope: dir }).catch(function () {
-          // A página continua funcionando normalmente mesmo se o registro falhar.
-        });
+        navigator.serviceWorker.register(swUrl, { scope: dir }).catch(function () {});
       } catch (e) {
-        // Fallback to the repository-scoped path used previously.
-        navigator.serviceWorker.register('/CHECK-SE/sw.js', { scope: '/CHECK-SE/' }).catch(function () {
-          // A página continua funcionando normalmente mesmo se o registro falhar.
-        });
+        navigator.serviceWorker.register('/CHECK-SE/sw.js', { scope: '/CHECK-SE/' }).catch(function () {});
       }
     });
   }

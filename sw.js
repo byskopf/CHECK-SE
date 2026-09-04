@@ -1,11 +1,13 @@
 /* Service Worker for CHECK-SE
+   PWA 1.1.0
    - Usa o escopo atual para montar as URLs do app shell
    - Mantém o cache do CHECK-SE isolado de outros PWAs no mesmo domínio
    - Cacheia cada navegação pela própria URL, sem sobrescrever o index.html
+   - Permite atualização assistida pelo portal
 */
 
 var CACHE_PREFIX = 'check-se-launcher-';
-var CACHE_NAME = CACHE_PREFIX + 'v6.1-20260904';
+var CACHE_NAME = CACHE_PREFIX + 'pwa-1.1.0-20260904';
 
 var scopeBase;
 try {
@@ -43,8 +45,16 @@ self.addEventListener('install', function (event) {
           });
         }));
       })
-      .then(function () { return self.skipWaiting(); })
+      .then(function () {
+        return self.skipWaiting();
+      })
   );
+});
+
+self.addEventListener('message', function (event) {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('activate', function (event) {
@@ -66,7 +76,9 @@ self.addEventListener('activate', function (event) {
         }
         return Promise.resolve();
       })
-      .then(function () { return self.clients.claim(); })
+      .then(function () {
+        return self.clients.claim();
+      })
   );
 });
 
@@ -91,11 +103,15 @@ self.addEventListener('fetch', function (event) {
           if (!response || !response.ok) return response;
           var copy = response.clone();
           return caches.open(CACHE_NAME)
-            .then(function (cache) { return cache.put(request.url, copy); })
+            .then(function (cache) {
+              return cache.put(request.url, copy);
+            })
             .catch(function () {
               // fail silently
             })
-            .then(function () { return response; });
+            .then(function () {
+              return response;
+            });
         })
         .catch(function () {
           return caches.match(request.url).then(function (cachedRequest) {
@@ -112,15 +128,21 @@ self.addEventListener('fetch', function (event) {
   event.respondWith(
     caches.match(request.url).then(function (cached) {
       if (cached) return cached;
+
       return fetch(request).then(function (response) {
         if (!response || response.status !== 200) return response;
+
         var copy = response.clone();
         return caches.open(CACHE_NAME)
-          .then(function (cache) { return cache.put(request.url, copy); })
+          .then(function (cache) {
+            return cache.put(request.url, copy);
+          })
           .catch(function () {
             // ignore cache failures
           })
-          .then(function () { return response; });
+          .then(function () {
+            return response;
+          });
       }).catch(function () {
         return caches.match(request.url);
       });

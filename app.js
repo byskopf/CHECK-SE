@@ -16,8 +16,12 @@
   var installInstructions = document.getElementById('installInstructions');
 
   var userAgent = navigator.userAgent || '';
-  var isIOS = /iphone|ipad|ipod/i.test(userAgent);
+  var isIPadOS = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+  var isIOS = /iphone|ipad|ipod/i.test(userAgent) || isIPadOS;
   var isAndroid = /android/i.test(userAgent);
+  var prefersReducedMotion = Boolean(
+    window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
   var isStandalone = Boolean(
     (window.matchMedia && (
       window.matchMedia('(display-mode: standalone)').matches ||
@@ -38,7 +42,7 @@
       openButtonText.textContent = 'Abrir CHECK-SE';
     } else {
       installHint.textContent = 'A instalação cria o ícone do CHECK-SE na tela inicial.';
-      openButtonText.textContent = 'Abrir no navegador';
+      openButtonText.textContent = 'Continuar sem instalar';
     }
   }
 
@@ -54,7 +58,7 @@
     window.setTimeout(function () {
       if (replaceHistory) window.location.replace(APP_URL);
       else window.location.assign(APP_URL);
-    }, 420);
+    }, prefersReducedMotion ? 0 : 180);
   }
 
   function instructionMarkup() {
@@ -163,12 +167,15 @@
     openButtonText.textContent = navigator.onLine === false ? 'Tentar abrir o CHECK-SE' : 'Abrir agora';
 
     if (navigator.onLine !== false) {
-      showLaunchOverlay();
-      window.setTimeout(function () { openCheckSe(true); }, 620);
+      openCheckSe(true);
     }
   } else if (openFromShortcut) {
     openCheckSe(true);
   } else if (isIOS) {
-    installButtonText.textContent = 'Como instalar no iPhone';
+    installButtonText.textContent = isIPadOS || /ipad/i.test(userAgent)
+      ? 'Como instalar no iPad'
+      : 'Como instalar no iPhone';
+  } else if (isAndroid) {
+    installButtonText.textContent = 'Como instalar no Android';
   }
 }());

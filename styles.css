@@ -213,6 +213,12 @@ button { font: inherit; }
 }
 
 .button:active { transform: scale(.985); }
+.button:disabled {
+  cursor: wait;
+  opacity: .72;
+  transform: none;
+  box-shadow: none;
+}
 .button:focus-visible, .dialog-close:focus-visible, .dialog-done:focus-visible {
   outline: 3px solid rgba(92, 224, 168, .65);
   outline-offset: 3px;
@@ -465,7 +471,20 @@ footer {
   .launcher { padding: 20px 16px; }
   .official-badge { padding-inline: 9px; font-size: .7rem; }
   .wordmark p { letter-spacing: .12em; }
-  .benefits span { font-size: .68rem; }
+  .benefits {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+  .benefits li {
+    min-height: 38px;
+    padding: 7px 10px;
+    border-radius: 11px;
+    flex-direction: row;
+    justify-content: flex-start;
+    background: rgba(255,255,255,.035);
+    font-size: .78rem;
+  }
+  .benefits svg { width: 21px; height: 21px; }
 }
 
 @media (max-height: 720px) and (min-width: 481px) {

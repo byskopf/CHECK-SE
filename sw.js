@@ -1,4 +1,4 @@
-var CACHE_NAME = 'check-se-launcher-v5-final-20260904';
+var CACHE_NAME = 'check-se-launcher-v6-20260904';
 var BASE_PATH = '/CHECK-SE/';
 var APP_SHELL = [
   BASE_PATH,
@@ -32,6 +32,14 @@ self.addEventListener('activate', function (event) {
           return Promise.resolve(false);
         }));
       })
+      .then(function () {
+        if (self.registration.navigationPreload) {
+          return self.registration.navigationPreload.enable().catch(function () {
+            // O cache continua funcionando mesmo sem pré-carregamento.
+          });
+        }
+        return Promise.resolve();
+      })
       .then(function () { return self.clients.claim(); })
   );
 });
@@ -45,11 +53,19 @@ self.addEventListener('fetch', function (event) {
 
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
+      Promise.resolve(event.preloadResponse)
+        .then(function (preloadedResponse) {
+          return preloadedResponse || fetch(request);
+        })
         .then(function (response) {
+          if (!response || !response.ok) return response;
           var copy = response.clone();
-          caches.open(CACHE_NAME).then(function (cache) { cache.put(BASE_PATH + 'index.html', copy); });
-          return response;
+          return caches.open(CACHE_NAME)
+            .then(function (cache) { return cache.put(BASE_PATH + 'index.html', copy); })
+            .catch(function () {
+              // Uma falha ao atualizar o cache não deve bloquear a navegação.
+            })
+            .then(function () { return response; });
         })
         .catch(function () {
           return caches.match(BASE_PATH + 'index.html').then(function (cached) {
@@ -66,8 +82,12 @@ self.addEventListener('fetch', function (event) {
       return fetch(request).then(function (response) {
         if (!response || response.status !== 200 || response.type !== 'basic') return response;
         var copy = response.clone();
-        caches.open(CACHE_NAME).then(function (cache) { cache.put(request, copy); });
-        return response;
+        return caches.open(CACHE_NAME)
+          .then(function (cache) { return cache.put(request, copy); })
+          .catch(function () {
+            // Mantém a resposta da rede mesmo se o armazenamento local falhar.
+          })
+          .then(function () { return response; });
       });
     })
   );

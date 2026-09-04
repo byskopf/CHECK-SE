@@ -1,11 +1,11 @@
 {
-  "id": "/VERIFIQUE-SE/",
+  "id": "/CHECK-SE/",
   "name": "CHECK-SE — Comissionamento Inteligente",
   "short_name": "CHECK-SE",
   "description": "Portal de instalação e acesso ao CHECK-SE.",
   "lang": "pt-BR",
-  "start_url": "/VERIFIQUE-SE/?origem=pwa",
-  "scope": "/VERIFIQUE-SE/",
+  "start_url": "/CHECK-SE/?origem=pwa",
+  "scope": "/CHECK-SE/",
   "display": "standalone",
   "display_override": ["standalone", "fullscreen"],
   "orientation": "portrait-primary",
@@ -44,7 +44,7 @@
       "name": "Abrir CHECK-SE",
       "short_name": "Abrir",
       "description": "Abrir o ambiente do CHECK-SE",
-      "url": "/VERIFIQUE-SE/?abrir=1",
+      "url": "/CHECK-SE/?abrir=1",
       "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]

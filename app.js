@@ -147,7 +147,7 @@
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('/VERIFIQUE-SE/sw.js', { scope: '/VERIFIQUE-SE/' }).catch(function () {
+      navigator.serviceWorker.register('/CHECK-SE/sw.js', { scope: '/CHECK-SE/' }).catch(function () {
         // A página continua funcionando normalmente mesmo se o registro falhar.
       });
     });

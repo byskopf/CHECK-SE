@@ -2,19 +2,19 @@ CHECK-SE — PWA PARA GITHUB PAGES
 
 Este pacote deixa o endereço abaixo com o mesmo visual moderno e o mesmo
 comportamento da versão preparada para a Netlify:
-https://byskopf.github.io/VERIFIQUE-SE/
+https://byskopf.github.io/CHECK-SE/
 
-O pacote já está ajustado para o caminho obrigatório /VERIFIQUE-SE/ e o endereço do
+O pacote já está ajustado para o caminho obrigatório /CHECK-SE/ e o endereço do
 aplicativo Google Apps Script já está configurado no arquivo app.js.
 
 COMO PUBLICAR
 1. Baixe e descompacte este arquivo ZIP no computador.
-2. Abra o repositório https://github.com/byskopf/VERIFIQUE-SE na branch principal.
+2. Abra o repositório https://github.com/byskopf/CHECK-SE na branch main.
 3. Clique em Add file e depois em Upload files.
 4. Envie TODOS OS ARQUIVOS que estão dentro da pasta descompactada.
 5. Confirme a substituição do index.html existente e finalize o commit.
 6. Aguarde a publicação do GitHub Pages.
-7. Abra https://byskopf.github.io/VERIFIQUE-SE/ e atualize a página uma vez.
+7. Abra https://byskopf.github.io/CHECK-SE/ e atualize a página uma vez.
 
 ATENÇÃO
 Não envie somente o arquivo ZIP para o repositório. O GitHub Pages não abre os
@@ -28,7 +28,7 @@ ARQUIVOS IMPORTANTES
 - index.html: nova tela inicial moderna;
 - styles.css: visual responsivo;
 - app.js: instalação e abertura do CHECK-SE;
-- manifest.json: configuração PWA no caminho /VERIFIQUE-SE/;
+- manifest.json: configuração PWA no caminho /CHECK-SE/;
 - sw.js: cache offline da tela inicial;
 - .nojekyll: informa ao GitHub Pages que os arquivos são estáticos;
 - ícones PNG e SVG: ícone correto do aplicativo.

@@ -1,5 +1,5 @@
-var CACHE_NAME = 'check-se-launcher-v4-verifique-se-20260904';
-var BASE_PATH = '/VERIFIQUE-SE/';
+var CACHE_NAME = 'check-se-launcher-v5-final-20260904';
+var BASE_PATH = '/CHECK-SE/';
 var APP_SHELL = [
   BASE_PATH,
   BASE_PATH + 'index.html',

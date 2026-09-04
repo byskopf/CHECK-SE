@@ -4,7 +4,7 @@
   "short_name": "CHECK-SE",
   "description": "Portal de instalação e acesso ao CHECK-SE.",
   "lang": "pt-BR",
-  "start_url": "./app.html?origem=pwa",
+  "start_url": "./?origem=pwa",
   "scope": "./",
   "display": "standalone",
   "display_override": ["standalone", "fullscreen"],
@@ -63,7 +63,7 @@
       "name": "Abrir CHECK-SE",
       "short_name": "Abrir",
       "description": "Abrir o ambiente do CHECK-SE",
-      "url": "./app.html?abrir=1",
+      "url": "./?abrir=1",
       "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]

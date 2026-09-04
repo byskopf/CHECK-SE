@@ -9,6 +9,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="CHECK-SE">
+  <meta name="check-se-pwa-version" content="1.1.0">
   <title>CHECK-SE | Comissionamento Inteligente</title>
   <link rel="canonical" href="https://byskopf.github.io/CHECK-SE/">
   <link rel="preconnect" href="https://script.google.com">
@@ -20,6 +21,54 @@
   <link rel="icon" href="icon-192.png" sizes="192x192" type="image/png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png" sizes="180x180">
   <link rel="stylesheet" href="styles.css">
+  <style>
+    .update-banner {
+      position: fixed;
+      z-index: 30;
+      left: 50%;
+      bottom: max(16px, env(safe-area-inset-bottom));
+      width: min(calc(100% - 28px), 460px);
+      min-height: 52px;
+      padding: 9px 10px 9px 15px;
+      border: 1px solid rgba(92,224,168,.34);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      transform: translateX(-50%);
+      background: #102d46;
+      color: #e7f2f8;
+      box-shadow: 0 16px 40px rgba(0,0,0,.38);
+      font-size: .84rem;
+      font-weight: 700;
+    }
+    .update-banner[hidden] { display: none; }
+    .update-banner button {
+      flex: 0 0 auto;
+      min-height: 36px;
+      padding: 7px 13px;
+      border: 0;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #5ce0a8;
+      color: #071c2e;
+      font-weight: 850;
+    }
+    .update-banner button:disabled { opacity: .7; cursor: wait; }
+    .launch-retry {
+      min-height: 44px;
+      margin-top: 4px;
+      padding: 10px 16px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 12px;
+      cursor: pointer;
+      background: rgba(255,255,255,.07);
+      color: #f4f8fb;
+      font-weight: 800;
+    }
+    .launch-retry[hidden] { display: none; }
+  </style>
   <script src="app.js" defer></script>
 </head>
 <body>
@@ -27,13 +76,17 @@
   <div class="ambient ambient-two" aria-hidden="true"></div>
 
   <div id="connectionBanner" class="connection-banner" role="status" aria-live="polite" hidden>
-    <!-- Replaced malformed SVG with a compact, valid "offline" icon -->
     <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
       <path d="M3 3l18 18"></path>
       <path d="M8.5 8.7A7.8 7.8 0 0 1 12 8c3.5 0 6.6 1.7 8.5 4.3"></path>
       <path d="M9 15.5A4.7 4.7 0 0 1 12 14c1.2 0 2.3.4 3.1 1.1"></path>
     </svg>
-    <span>Sem conexão. Esta tela continua disponível.</span>
+    <span id="connectionText">Sem conexão. O portal continua disponível; o ambiente online pode exigir internet.</span>
+  </div>
+
+  <div id="updateBanner" class="update-banner" role="status" aria-live="polite" hidden>
+    <span id="updateText">Nova versão do aplicativo disponível.</span>
+    <button id="updateButton" type="button">Atualizar</button>
   </div>
 
   <main class="page-shell">
@@ -111,8 +164,9 @@
       </svg>
     </div>
     <strong>CHECK-SE</strong>
-    <span>Abrindo seu ambiente…</span>
-    <div class="loader" aria-hidden="true"></div>
+    <span id="launchStatus">Abrindo seu ambiente…</span>
+    <div class="loader" id="launchLoader" aria-hidden="true"></div>
+    <button class="launch-retry" id="launchRetry" type="button" hidden>Tentar novamente</button>
   </div>
 
   <dialog class="install-dialog" id="installDialog" aria-labelledby="installDialogTitle">

@@ -42,6 +42,22 @@
       "purpose": "maskable"
     }
   ],
+  "screenshots": [
+    {
+      "src": "screenshot-wide.jpg",
+      "sizes": "1363x936",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "Portal oficial de acesso ao CHECK-SE"
+    },
+    {
+      "src": "screenshot-narrow.jpg",
+      "sizes": "520x830",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Instalação do CHECK-SE no celular"
+    }
+  ],
   "shortcuts": [
     {
       "name": "Abrir CHECK-SE",

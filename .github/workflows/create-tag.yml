@@ -1,0 +1,77 @@
+name: Criar tag de versão
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versão no formato X.Y.Z (exemplo: 1.1.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: create-version-tag
+  cancel-in-progress: false
+
+jobs:
+  create-tag:
+    name: Validar e criar tag
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar todo o histórico
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validar versão informada
+        id: version
+        shell: bash
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [[ ! "$INPUT_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "A versão deve usar o formato X.Y.Z, sem a letra v." >&2
+            exit 1
+          fi
+          echo "tag=v$INPUT_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Validar PWA
+        run: |
+          node scripts/validate-pwa.mjs
+          node --check app.js
+          node --check sw.js
+
+      - name: Confirmar versão dos arquivos
+        shell: bash
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          node -e "const fs=require('fs'); const v=process.env.INPUT_VERSION; const app=fs.readFileSync('app.js','utf8'); const sw=fs.readFileSync('sw.js','utf8'); if (!app.includes(\"PWA_VERSION = '\"+v+\"'\")) throw new Error('PWA_VERSION em app.js não corresponde a '+v); if (!sw.includes('PWA '+v)) throw new Error('Versão em sw.js não corresponde a '+v);"
+
+      - name: Impedir tag duplicada
+        shell: bash
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "A tag $TAG já existe." >&2
+            exit 1
+          fi
+
+      - name: Criar e publicar tag anotada
+        shell: bash
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "CHECK-SE $TAG"
+          git push origin "$TAG"

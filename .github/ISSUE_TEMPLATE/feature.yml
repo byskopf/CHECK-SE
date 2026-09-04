@@ -1,0 +1,31 @@
+name: Sugerir uma melhoria
+description: Proponha uma melhoria para o PWA CHECK-SE.
+title: "[Melhoria] "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: Necessidade
+      description: Qual problema ou dificuldade esta melhoria resolveria?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Sugestão
+      description: Como você imagina que a melhoria poderia funcionar?
+    validations:
+      required: true
+  - type: textarea
+    id: benefit
+    attributes:
+      label: Benefício esperado
+      description: Quem seria beneficiado e de que forma?
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Informações adicionais
+      description: Inclua exemplos, imagens ou outras observações úteis.

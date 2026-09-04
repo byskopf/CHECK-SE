@@ -1,0 +1,50 @@
+name: Relatar um problema
+description: Informe um erro encontrado no PWA CHECK-SE.
+title: "[Bug] "
+labels: [bug]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: O que aconteceu?
+      description: Descreva o problema de forma objetiva.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Como reproduzir?
+      description: Liste os passos que levam ao problema.
+      placeholder: |
+        1. Acesse...
+        2. Toque em...
+        3. Observe...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Resultado esperado
+      description: Explique o que deveria ter acontecido.
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Aparelho e navegador
+      placeholder: Exemplo: Samsung Galaxy A54, Chrome 128
+  - type: dropdown
+    id: installed
+    attributes:
+      label: O CHECK-SE estava instalado como aplicativo?
+      options:
+        - Sim
+        - Não
+        - Não sei
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidências adicionais
+      description: Se possível, anexe capturas de tela e informe se estava online ou offline.

@@ -1,0 +1,28 @@
+name: Validar teste offline
+on:
+  push:
+    branches: [teste/pwa-offline]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Validar sintaxe e PWA principal
+        run: |
+          node scripts/validate-pwa.mjs
+          node --check app.js
+          node --check sw.js
+          for file in teste-offline/*.js; do node --check "$file"; done
+      - run: npm run test:offline
+      - run: git diff --check

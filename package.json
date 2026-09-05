@@ -1,0 +1,5 @@
+{
+  "name": "check-se-pwa-validation", "private": true,
+  "scripts": {"test:offline": "node scripts/test-offline.mjs"},
+  "devDependencies": {"playwright": "1.62.1"}
+}

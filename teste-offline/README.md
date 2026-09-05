@@ -14,7 +14,7 @@ A branch de teste **não muda o GitHub Pages atual**. Não há publicação auto
 desta branch. A rota só ficará disponível no Pages se estes arquivos forem futuramente
 integrados à branch publicada. Não troque a origem do Pages para esta branch.
 
-1. Entre com uma conta da implantação de teste.
+1. Entre com sua conta normal do CHECK-SE (agora aponta para a implantação de produção).
 2. Atualize a lista, escolha uma obra e clique em **Baixar / atualizar obra**.
 3. Aguarde a confirmação de que a interface está pronta para abrir offline.
 4. Desconecte a internet, recarregue a página, selecione a obra e crie/edite pendências.
@@ -36,8 +36,8 @@ integrados à branch publicada. Não troque a origem do Pages para esta branch.
 
 ## Contrato implementado
 
-Base fixa:
-`https://script.google.com/macros/s/AKfycbwZmusRdgwCZbMP2PS8QgkTRi6EAekmiMhrEcoBxgK4580ajwcYmtkpUGMPlej4e_Ty/exec`
+Base fixa (produção, desde 2026-09-05):
+`https://script.google.com/macros/s/AKfycbx7ReYi1OoXTvO2e-FLXczg-Ube0WZcjJSWe8HGlWbQtUof1F-1dOUQ-kqrwZQPjb6D/exec`
 
 - GET `apiLoginBase`: `username`, `password`. Guarda token, validade e identificação
   da conta retornada por `base.id` (fallback `base.username`). Nunca persiste a senha.

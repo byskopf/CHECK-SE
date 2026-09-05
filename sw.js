@@ -7,7 +7,7 @@
 */
 
 var CACHE_PREFIX = 'check-se-launcher-';
-var CACHE_NAME = CACHE_PREFIX + 'pwa-1.2.0-20260905';
+var CACHE_NAME = CACHE_PREFIX + 'pwa-1.1.0-20260904';
 
 var scopeBase;
 try {
@@ -19,7 +19,6 @@ try {
 
 var APP_SHELL = [
   new URL('index.html', scopeBase).href,
-  new URL('offline-app.html', scopeBase).href,
   new URL('styles.css', scopeBase).href,
   new URL('app.js', scopeBase).href,
   new URL('manifest.json', scopeBase).href,

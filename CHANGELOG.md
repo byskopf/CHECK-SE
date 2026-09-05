@@ -11,11 +11,6 @@ formato `vX.Y.Z`.
 - Validação automática da estrutura, do manifesto e da sintaxe JavaScript do PWA.
 - Workflow manual e seguro para criação de tags de versão.
 - Formulários de Issue para relatos de problemas e sugestões de melhoria.
-- `offline-app.html`: primeira versão do modo offline de verdade — login, escolha
-  de obra, download das pendências (`getDadosOffline`) e sincronização em lote
-  com controle de conflito por versão (`sincronizarRegistrosOffline`), consumindo
-  a nova API do Apps Script. Aponta hoje para a implantação de TESTE; precisa
-  trocar para produção quando o recurso for validado.
 
 ## [1.1.0] - 2026-09-04
 

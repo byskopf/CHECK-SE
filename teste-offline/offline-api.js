@@ -71,3 +71,22 @@ export async function download(session, substationKey) {
 export function sendBatch(session, substationKey, records) {
   return request('sincronizarRegistrosOffline', { accessCode: tokenOf(session), substationKey, registros: records.map(toWire) }, true);
 }
+export async function blobToBase64(blob) {
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  let binary = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  return btoa(binary);
+}
+export async function uploadPhoto(session, substationKey, issueId, versao, blob) {
+  const base64 = await blobToBase64(blob);
+  return request('enviarFotoOffline', { accessCode: tokenOf(session), substationKey, issueId, versao, base64 }, true);
+}
+export function removePhoto(session, substationKey, issueId, versao) {
+  return request('removerFotoOffline', { accessCode: tokenOf(session), substationKey, issueId, versao }, true);
+}
+export async function fetchPhoto(session, substationKey, issueId) {
+  const data = await request('getFotoOffline', { accessCode: tokenOf(session), substationKey, issueId });
+  if (typeof data.base64 !== 'string' || !data.base64) throw new ApiError('Foto inválida recebida do servidor.', 'protocol');
+  return `data:${data.contentType || 'image/jpeg'};base64,${data.base64}`;
+}

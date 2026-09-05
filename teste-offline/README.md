@@ -55,6 +55,13 @@ Base fixa (produção, desde 2026-09-05):
 - **Concluir pendência** (botão "Concluir"): liga `done` uma única vez (nunca desliga por
   este laboratório). O servidor apaga a foto anexada à pendência, se houver — mesma regra
   do app principal ("a foto só serve enquanto a pendência está viva").
+- **Foto na pendência** (anexar, trocar, remover): só disponível depois que a pendência já
+  tem id do servidor (uma pendência recém-criada offline ganha foto só depois do primeiro
+  envio bem-sucedido). Comprimida no aparelho (lado maior 1024px, JPEG 60%, igual ao app
+  principal) e enviada em POST próprio (`enviarFotoOffline`/`removerFotoOffline`), fora do
+  lote de texto — a foto é grande demais para ir junto. Usa o mesmo controle de versão
+  otimista: se a pendência mudou no meio-tempo, vira conflito em vez de sobrescrever. Some
+  do Drive ao concluir a pendência, mesma regra do app principal.
 
 ## Preservação e limites
 
@@ -69,9 +76,9 @@ Base fixa (produção, desde 2026-09-05):
   É uma cópia para conferência; importação/restauração não faz parte desta fase.
 - Dados pertencem a este navegador/perfil. Limpar os dados do site ou usar navegação privada
   pode removê-los. Contas são separadas logicamente, sem criptografia local adicional.
-- Requer IndexedDB, Service Worker e Web Locks (Chrome/Edge atuais). Não inclui fotos,
-  anexos, exclusão offline, envio/conferência com a prestadora ou sincronização com a
-  página fechada. Concluir pendência já funciona (ver "Contrato implementado" acima).
+- Requer IndexedDB, Service Worker e Web Locks (Chrome/Edge atuais). Não inclui exclusão
+  offline, envio/conferência com a prestadora, relatórios ou sincronização com a página
+  fechada. Concluir pendência e foto já funcionam (ver "Contrato implementado" acima).
 - Em futura atualização, incremente o nome do cache do worker. O novo worker aguarda
   fechamento das abas antigas antes de assumir, evitando misturar versões durante trabalho.
 

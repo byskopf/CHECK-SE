@@ -1,5 +1,5 @@
 import { lock, stateOf, changeState } from './db.js';
-import { sendBatch, tokenOf } from './offline-api.js';
+import { sendBatch, tokenOf, uploadPhoto, removePhoto } from './offline-api.js';
 export const BATCH_SIZE = 25;
 export function applyResults(state, sent, response) {
   const results = Array.isArray(response?.resultados) ? response.resultados : [];
@@ -71,6 +71,57 @@ export async function synchronize(session, work, sender = sendBatch) {
         throw error;
       }
       await changeState(session.account, current => applyResults(current, sent, response));
+    }
+  });
+}
+// Foto so' pode subir DEPOIS que a pendencia tem id do servidor - por isso e' um passo a
+// parte, rodado apos o texto (que e' quem cria o id de uma pendencia nova). Um registro por
+// vez: cada envio de foto ja e' uma chamada HTTP cheia (a foto e' grande), sem sentido em lote.
+export async function synchronizePhotos(session, work, uploader = uploadPhoto, remover = removePhoto) {
+  tokenOf(session);
+  return lock(session.account, async () => {
+    while (true) {
+      tokenOf(session);
+      const state = await stateOf(session.account);
+      const record = state.records.find(r => r.work === work && r.photo && r.id && r.status === 'sincronizado');
+      if (!record) return;
+      const { action, blob } = record.photo;
+      let result;
+      try {
+        result = action === 'remove'
+          ? await remover(session, work, record.id, record.syncVersion)
+          : await uploader(session, work, record.id, record.syncVersion, blob);
+      } catch (error) {
+        await changeState(session.account, current => {
+          const r = current.records.find(x => x.idLocal === record.idLocal);
+          if (r) r.photoError = error.message;
+          return current;
+        });
+        throw error;
+      }
+      await changeState(session.account, current => {
+        const r = current.records.find(x => x.idLocal === record.idLocal);
+        if (!r) return current;
+        if (result.sucesso === true && result.conflito === false) {
+          r.dados = { ...r.dados, photoFileId: result.dados?.photoFileId ?? '' };
+          r.syncVersion = result.versao;
+          r.atualizadoEm = result.atualizadoEm;
+          delete r.photo;
+          delete r.photoError;
+          if (r.status === 'sincronizado') current.queue = current.queue.filter(q => q.idLocal !== r.idLocal);
+        } else if (result.conflito === true) {
+          r.status = 'conflito';
+          r.server = structuredClone(result);
+          r.error = result.motivo || 'A versão do servidor mudou. Compare antes de decidir.';
+          const queued = current.queue.find(q => q.idLocal === r.idLocal);
+          if (queued) queued.phase = 'conflict'; else current.queue.push({ idLocal: r.idLocal, work, phase: 'conflict' });
+        } else {
+          // sucesso:false sem conflito (ex.: pendencia concluida entre o clique e o envio).
+          r.photoError = result.motivo || 'Não foi possível salvar a foto.';
+          delete r.photo;
+        }
+        return current;
+      });
     }
   });
 }

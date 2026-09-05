@@ -78,7 +78,7 @@ try {
       return { user: new URL(captured.url).searchParams.get('username'), password: new URL(captured.url).searchParams.get('password'), cache: captured.options.cache, error, wire: api.toWire({ idLocal: 'local', id: 'ISS-1', syncVersion: 3, dados: { description: 'd', version: 99, done: true, seq: 1 } }) };
     });
     assert.equal(result.user, 'a&b'); assert.equal(result.password, '?# ç'); assert.equal(result.cache, 'no-store'); assert.equal(result.error, 'auth');
-    assert.deepEqual(result.wire, { idLocal: 'local', id: 'ISS-1', versao: 3, dados: { description: 'd' } });
+    assert.deepEqual(result.wire, { idLocal: 'local', id: 'ISS-1', versao: 3, dados: { description: 'd', done: true } });
   });
   await test('IndexedDB atômico, contas separadas, download preserva pendências e sessão expirada', async page => {
     const result = await page.evaluate(async () => {
@@ -165,6 +165,39 @@ try {
       }); return calls;
     });
     const calls = await Promise.all([job(page), job(second)]); assert.equal(calls[0] + calls[1], 1);
+  });
+  await test('Foto: exige id do servidor, cancela envio local sem chamar rede, sobe com sucesso e trata conflito', async page => {
+    const result = await page.evaluate(async () => {
+      const db = await import('./db.js'), sync = await import('./sync.js');
+      await db.changeState('a', s => { s.works.push({ chave: 'w', downloaded: true }); return s; });
+      await db.saveRecord('a', 'w', null, { description: 'sem id ainda' });
+      const semId = (await db.stateOf('a')).records[0];
+      let semIdFalhou;
+      try { await db.setLocalPhoto('a', 'w', semId.idLocal, new Blob(['x'])); } catch { semIdFalhou = true; }
+      await db.changeState('a', s => { s.records = []; s.queue = []; return s; });
+      await db.changeState('a', s => db.mergeDownload(s, 'w', { obra: { meta: {} }, registros: [{ id: 'ISS-1', versao: 1, dados: { description: 'x', photoFileId: '' } }] }));
+      const record = (await db.stateOf('a')).records[0];
+      await db.setLocalPhoto('a', 'w', record.idLocal, new Blob(['x']));
+      await db.removePhotoIntent('a', 'w', record.idLocal);
+      const canceladoSemRede = (await db.stateOf('a')).records[0].photo;
+      await db.setLocalPhoto('a', 'w', record.idLocal, new Blob(['x']));
+      const session = { account: 'a', token: 'x', sessionExpiresAt: '2099-01-01' };
+      let uploadCalls = 0;
+      await sync.synchronizePhotos(session, 'w', async (_, __, issueId, versao) => {
+        uploadCalls++;
+        return { sucesso: true, conflito: false, id: issueId, versao: versao + 1, atualizadoEm: 'agora', dados: { description: 'x', photoFileId: 'FILE-1' } };
+      });
+      const afterUpload = (await db.stateOf('a')).records[0];
+      await db.removePhotoIntent('a', 'w', record.idLocal);
+      await sync.synchronizePhotos(session, 'w', async () => { throw new Error('não deveria subir'); }, async (_, __, issueId, versao) => ({ sucesso: false, conflito: true, idServidor: issueId, versao: versao + 1, atualizadoEm: 'depois', dados: { description: 'servidor-mudou', photoFileId: 'FILE-1' } }));
+      const afterConflict = (await db.stateOf('a')).records[0];
+      return { semIdFalhou, uploadCalls, canceladoSemRede, afterUpload: { photoFileId: afterUpload.dados.photoFileId, syncVersion: afterUpload.syncVersion, photo: afterUpload.photo }, afterConflict: { status: afterConflict.status, error: afterConflict.error, serverDados: afterConflict.server?.dados } };
+    });
+    assert.equal(result.semIdFalhou, true);
+    assert.equal(result.canceladoSemRede, undefined);
+    assert.equal(result.uploadCalls, 1);
+    assert.equal(result.afterUpload.photoFileId, 'FILE-1'); assert.equal(result.afterUpload.syncVersion, 2); assert.equal(result.afterUpload.photo, undefined);
+    assert.equal(result.afterConflict.status, 'conflito'); assert.deepEqual(result.afterConflict.serverDados, { description: 'servidor-mudou', photoFileId: 'FILE-1' });
   });
   console.log(`${count} cenários passaram.`);
 } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }

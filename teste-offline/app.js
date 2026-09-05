@@ -1,8 +1,37 @@
-import { FIELDS, login, listWorks, download, validSession, editable } from './offline-api.js';
-import { read, mutate, stateOf, changeState, lock, saveRecord, completeRecord, mergeDownload } from './db.js';
-import { synchronize, resolveRecord } from './sync.js';
+import { FIELDS, login, listWorks, download, validSession, editable, fetchPhoto } from './offline-api.js';
+import { read, mutate, stateOf, changeState, lock, saveRecord, completeRecord, mergeDownload, setLocalPhoto, removePhotoIntent } from './db.js';
+import { synchronize, synchronizePhotos, resolveRecord } from './sync.js';
 const $ = id => document.getElementById(id);
 let session, state, selected = '', editing = null, busy = false;
+const photoCache = new Map(), openPhotos = new Set(), photoObjectUrls = new Map();
+// Mesma compressao do app principal (lado maior 1024px, JPEG 60%) - so' que termina em
+// Blob (nao data URL): ocupa menos espaco no IndexedDB e vira base64 so' na hora de enviar.
+function compressPhoto(file) {
+  return new Promise((resolve, reject) => {
+    const maxSide = 1024;
+    const draw = (source, width, height, release) => {
+      if (width > maxSide || height > maxSide) {
+        if (width >= height) { height = Math.round(height * (maxSide / width)); width = maxSide; }
+        else { width = Math.round(width * (maxSide / height)); height = maxSide; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(source, 0, 0, width, height);
+      release?.();
+      canvas.toBlob(blob => (blob ? resolve(blob) : reject(new Error('Não foi possível preparar a foto.'))), 'image/jpeg', 0.6);
+    };
+    if (window.createImageBitmap) {
+      createImageBitmap(file).then(bitmap => draw(bitmap, bitmap.width, bitmap.height, () => bitmap.close())).catch(() => reject(new Error('Arquivo não é uma imagem válida.')));
+      return;
+    }
+    const img = new Image();
+    img.onload = () => draw(img, img.naturalWidth, img.naturalHeight);
+    img.onerror = () => reject(new Error('Arquivo não é uma imagem válida.'));
+    img.src = URL.createObjectURL(file);
+  });
+}
 const message = text => { $('message').textContent = text; };
 function node(tag, text, className) {
   const el = document.createElement(tag); el.textContent = text;
@@ -14,6 +43,47 @@ function action(label, fn) {
   button.addEventListener('click', () => run(fn)); return button;
 }
 function network() { $('network').textContent = navigator.onLine ? 'Com conexão' : 'Sem internet • dados locais'; }
+// So' oferece anexar foto quando a pendencia ja tem id do servidor (o endpoint de foto
+// exige isso). "locked" reusa a mesma regra do texto: concluida ou em conflito/erro, sem edicao.
+function photoSection(record) {
+  const wrap = document.createElement('div'); wrap.className = 'photo-box';
+  if (!record.id) { wrap.append(node('p', 'Sincronize esta pendência para poder anexar foto.', 'hint')); return wrap; }
+  const pendingAdd = record.photo?.action === 'add';
+  const pendingRemove = record.photo?.action === 'remove';
+  const locked = record.dados?.done || ['conflito', 'erro'].includes(record.status);
+  if (pendingAdd) {
+    let url = photoObjectUrls.get(record.idLocal);
+    if (!url) { url = URL.createObjectURL(record.photo.blob); photoObjectUrls.set(record.idLocal, url); }
+    const img = document.createElement('img'); img.src = url; img.className = 'photo-thumb'; img.alt = 'Foto anexada (aguardando envio)';
+    wrap.append(img, node('span', 'foto pendente de envio', 'badge pendente'));
+  } else if (pendingRemove) {
+    wrap.append(node('p', 'Foto será removida ao sincronizar.', 'hint'));
+  } else if (record.dados?.photoFileId) {
+    if (openPhotos.has(record.idLocal) && photoCache.has(record.dados.photoFileId)) {
+      const img = document.createElement('img'); img.src = photoCache.get(record.dados.photoFileId); img.className = 'photo-thumb'; img.alt = 'Foto da pendência';
+      wrap.append(img);
+    } else {
+      wrap.append(action('Ver foto', async () => {
+        openPhotos.add(record.idLocal);
+        if (!photoCache.has(record.dados.photoFileId)) photoCache.set(record.dados.photoFileId, await fetchPhoto(session, selected, record.id));
+      }));
+    }
+  }
+  if (locked) return wrap;
+  const inputLabel = document.createElement('label'); inputLabel.className = 'photo-choice';
+  const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.capture = 'environment';
+  input.addEventListener('change', () => run(async () => {
+    const file = input.files[0]; if (!file) return;
+    const blob = await compressPhoto(file);
+    await setLocalPhoto(session.account, selected, record.idLocal, blob);
+  }));
+  inputLabel.append(record.dados?.photoFileId || pendingAdd ? 'Trocar foto' : 'Anexar foto', input);
+  wrap.append(inputLabel);
+  if (record.dados?.photoFileId || pendingAdd) wrap.append(action('Remover foto', async () => {
+    await removePhotoIntent(session.account, selected, record.idLocal);
+  }));
+  return wrap;
+}
 async function refresh() {
   network();
   $('workspace').hidden = !session?.account;
@@ -41,7 +111,9 @@ async function refresh() {
     if (record.dados.done) card.append(node('span', 'concluída', 'badge concluida'));
     if (record.dados.observations) card.append(node('p', record.dados.observations));
     const details = document.createElement('details'); details.append(node('summary', 'Ver dados locais'), node('pre', JSON.stringify(record.dados, null, 2))); card.append(details);
+    card.append(photoSection(record));
     if (record.error) card.append(node('p', record.error));
+    if (record.photoError) card.append(node('p', 'Foto: ' + record.photoError));
     if (['sincronizado', 'pendente'].includes(record.status) && !record.dados.done) {
       card.append(action('Editar', () => openEditor(record)));
       card.append(action('Concluir', async () => {
@@ -93,6 +165,7 @@ async function syncSelected() {
   if (!selected) throw new Error('Selecione uma obra.');
   message('Sincronizando… mantenha esta aba aberta.');
   await synchronize(session, selected);
+  await synchronizePhotos(session, selected);
   message('Sincronização concluída. Confira os estados dos registros abaixo.');
 }
 $('login-form').addEventListener('submit', event => {
@@ -107,12 +180,16 @@ $('login-form').addEventListener('submit', event => {
     message('Acesso confirmado. Atualize a lista de obras para baixar os dados.');
   });
 });
+function forgetPhotoPreviews() {
+  for (const url of photoObjectUrls.values()) URL.revokeObjectURL(url);
+  photoObjectUrls.clear(); photoCache.clear(); openPhotos.clear();
+}
 $('logout').onclick = () => run(async () => {
   await mutate('session', () => null); session = null; state = null; selected = ''; editing = null;
-  $('editor').hidden = true; $('records').replaceChildren();
+  $('editor').hidden = true; $('records').replaceChildren(); forgetPhotoPreviews();
   message('Sessão encerrada. Dados locais preservados para o próximo acesso à mesma conta.');
 });
-$('works').onchange = () => { selected = $('works').value; $('editor').hidden = true; editing = null; run(refresh); };
+$('works').onchange = () => { selected = $('works').value; $('editor').hidden = true; editing = null; forgetPhotoPreviews(); run(refresh); };
 $('list').onclick = () => run(async () => {
   const works = await listWorks(session);
   await lock(session.account, () => changeState(session.account, current => {

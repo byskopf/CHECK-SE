@@ -70,6 +70,38 @@ export async function completeRecord(account, work, record) {
   if (record.dados?.done) throw new Error('Esta pendência já está concluída.');
   return saveRecord(account, work, record.idLocal, { done: true }, record);
 }
+// A foto so' pode ser anexada depois que a pendencia ja tem id do servidor (o endpoint de
+// foto exige issueId + versao para o controle de conflito). "photo" e' a INTENCAO local
+// ainda nao enviada - {blob, action:'add'} ou {action:'remove'} - separada de dados.photoFileId
+// (o que o servidor confirma que existe hoje). A sincronizacao de foto consome e apaga "photo".
+export async function setLocalPhoto(account, work, idLocal, blob) {
+  return lock(account, () => changeState(account, state => {
+    const record = state.records.find(r => r.idLocal === idLocal && r.work === work);
+    if (!record) throw new Error('Registro não encontrado.');
+    if (!record.id) throw new Error('Sincronize esta pendência antes de anexar uma foto.');
+    if (['conflito', 'erro'].includes(record.status)) throw new Error('Resolva o conflito ou confira o envio antes de anexar foto.');
+    record.photo = { blob, action: 'add' };
+    delete record.photoError;
+    if (!state.queue.find(q => q.idLocal === idLocal)) state.queue.push({ idLocal, work, phase: 'pending' });
+    return state;
+  }));
+}
+// Cancela uma foto ainda nao enviada (nada a desfazer no servidor) OU marca para remover
+// uma foto que ja existe la (so' some de verdade na proxima sincronizacao). "Trocar foto"
+// e' so' chamar setLocalPhoto de novo por cima - substitui a intencao, seja ela qual for.
+export async function removePhotoIntent(account, work, idLocal) {
+  return lock(account, () => changeState(account, state => {
+    const record = state.records.find(r => r.idLocal === idLocal && r.work === work);
+    if (!record) throw new Error('Registro não encontrado.');
+    if (record.photo?.action === 'add') { delete record.photo; }
+    else if (record.dados?.photoFileId) {
+      record.photo = { action: 'remove' };
+      if (!state.queue.find(q => q.idLocal === idLocal)) state.queue.push({ idLocal, work, phase: 'pending' });
+    } else delete record.photo;
+    delete record.photoError;
+    return state;
+  }));
+}
 export function mergeDownload(state, work, data) {
   const prior = state.works.find(w => w.chave === work) || { chave: work, nome: data.obra.meta?.obra || work };
   state.works = state.works.filter(w => w.chave !== work);

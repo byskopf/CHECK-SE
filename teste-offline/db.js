@@ -64,6 +64,12 @@ export async function saveRecord(account, work, idLocal, dados, expected = null)
     return state;
   }));
 }
+// Concluir reaproveita toda a proteção de saveRecord (obra baixada, conflito/erro pendente,
+// edição concorrente em outra aba) - só acrescenta a checagem de "já está concluída".
+export async function completeRecord(account, work, record) {
+  if (record.dados?.done) throw new Error('Esta pendência já está concluída.');
+  return saveRecord(account, work, record.idLocal, { done: true }, record);
+}
 export function mergeDownload(state, work, data) {
   const prior = state.works.find(w => w.chave === work) || { chave: work, nome: data.obra.meta?.obra || work };
   state.works = state.works.filter(w => w.chave !== work);

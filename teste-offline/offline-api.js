@@ -8,6 +8,9 @@ export function editable(dados) {
 }
 export function toWire(record) {
   const item = { idLocal: record.idLocal, dados: editable(record.dados) };
+  // "done" fica fora do FIELDS de propósito: não é um campo do formulário de edição, é a ação
+  // "concluir" (completeRecord, em db.js). Passa direto, sem entrar na whitelist de texto.
+  if (record.dados?.done === true) item.dados.done = true;
   if (record.id) { item.id = record.id; item.versao = record.syncVersion; }
   return item;
 }

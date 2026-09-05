@@ -1,5 +1,5 @@
 import { FIELDS, login, listWorks, download, validSession, editable } from './offline-api.js';
-import { read, mutate, stateOf, changeState, lock, saveRecord, mergeDownload } from './db.js';
+import { read, mutate, stateOf, changeState, lock, saveRecord, completeRecord, mergeDownload } from './db.js';
 import { synchronize, resolveRecord } from './sync.js';
 const $ = id => document.getElementById(id);
 let session, state, selected = '', editing = null, busy = false;
@@ -38,10 +38,16 @@ async function refresh() {
   for (const record of records) {
     const card = document.createElement('article');
     card.append(node('span', record.status, 'badge ' + record.status), node('h3', record.dados.description || '(sem descrição)'), node('p', `${record.dados.module || ''} • ${record.dados.date || ''}`));
+    if (record.dados.done) card.append(node('span', 'concluída', 'badge concluida'));
     if (record.dados.observations) card.append(node('p', record.dados.observations));
     const details = document.createElement('details'); details.append(node('summary', 'Ver dados locais'), node('pre', JSON.stringify(record.dados, null, 2))); card.append(details);
     if (record.error) card.append(node('p', record.error));
-    if (['sincronizado', 'pendente'].includes(record.status)) card.append(action('Editar', () => openEditor(record)));
+    if (['sincronizado', 'pendente'].includes(record.status) && !record.dados.done) {
+      card.append(action('Editar', () => openEditor(record)));
+      card.append(action('Concluir', async () => {
+        if (confirm('Marcar esta pendência como concluída? A foto anexada (se houver) será apagada, assim como no app principal.')) await completeRecord(session.account, selected, record);
+      }));
+    }
     if (record.status === 'conflito') {
       card.append(node('h4', 'Versão do servidor'), node('pre', JSON.stringify(record.server?.dados || { motivo: record.server?.motivo }, null, 2)));
       if (record.server?.dados && Number.isInteger(record.server.versao)) {

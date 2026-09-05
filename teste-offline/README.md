@@ -50,8 +50,11 @@ Base fixa (produção, desde 2026-09-05):
 - Conflito retém local e servidor separadamente. Exclusão no servidor fica como conflito
   para conferência, sem recriar automaticamente a pendência.
 - Só edita/envia `module`, `description`, `observations`, `date`, `pg`, `reference`.
-  Outros dados baixados permanecem para consulta; `version` (visita técnica), `done`,
-  `seq` e `correctionStatus` não são alterados nem enviados.
+  Outros dados baixados permanecem para consulta; `version` (visita técnica), `seq`
+  e `correctionStatus` não são alterados nem enviados por aqui.
+- **Concluir pendência** (botão "Concluir"): liga `done` uma única vez (nunca desliga por
+  este laboratório). O servidor apaga a foto anexada à pendência, se houver — mesma regra
+  do app principal ("a foto só serve enquanto a pendência está viva").
 
 ## Preservação e limites
 
@@ -67,7 +70,8 @@ Base fixa (produção, desde 2026-09-05):
 - Dados pertencem a este navegador/perfil. Limpar os dados do site ou usar navegação privada
   pode removê-los. Contas são separadas logicamente, sem criptografia local adicional.
 - Requer IndexedDB, Service Worker e Web Locks (Chrome/Edge atuais). Não inclui fotos,
-  anexos, exclusão offline, edição de status de correção ou sincronização com a página fechada.
+  anexos, exclusão offline, envio/conferência com a prestadora ou sincronização com a
+  página fechada. Concluir pendência já funciona (ver "Contrato implementado" acima).
 - Em futura atualização, incremente o nome do cache do worker. O novo worker aguarda
   fechamento das abas antigas antes de assumir, evitando misturar versões durante trabalho.
 

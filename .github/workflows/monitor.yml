@@ -1,0 +1,36 @@
+name: Monitorar disponibilidade
+
+# Roda sozinho a cada 3 horas e confere se os dois links do CHECK-SE respondem.
+# Se algum falhar, esta Action fica vermelha e o GitHub manda um e-mail
+# automaticamente para quem tem notificações de Actions ativadas neste repositório
+# (Configurações da conta do GitHub > Notifications > Actions).
+on:
+  schedule:
+    - cron: '0 */3 * * *'
+  workflow_dispatch:
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Portal de instalação (GitHub Pages)
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "https://byskopf.github.io/CHECK-SE/")
+          echo "HTTP $status"
+          if [ "$status" != "200" ]; then
+            echo "::error::Portal respondeu HTTP $status (esperado 200)."
+            exit 1
+          fi
+
+      - name: App oficial (Apps Script - produção)
+        run: |
+          body=$(curl -s --max-time 30 "https://script.google.com/macros/s/AKfycbx7ReYi1OoXTvO2e-FLXczg-Ube0WZcjJSWe8HGlWbQtUof1F-1dOUQ-kqrwZQPjb6D/exec")
+          tamanho=${#body}
+          echo "Tamanho recebido: $tamanho bytes"
+          # A pagina normal do app tem mais de 300 KB. Uma resposta pequena costuma
+          # significar erro do Apps Script, cota excedida ou implantação fora do ar -
+          # nao um HTTP 500 (o Apps Script normalmente devolve 200 mesmo quando falha).
+          if [ "$tamanho" -lt 300000 ]; then
+            echo "::error::App oficial devolveu uma página pequena demais ($tamanho bytes) - pode estar fora do ar."
+            exit 1
+          fi

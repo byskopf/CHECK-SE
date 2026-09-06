@@ -1,5 +1,5 @@
 import { lock, stateOf, changeState } from './db.js';
-import { sendBatch, tokenOf, uploadPhoto, removePhoto } from './offline-api.js';
+import { sendBatch, tokenOf, uploadPhoto, removePhoto, reviewCorrection } from './offline-api.js';
 export const BATCH_SIZE = 25;
 export function applyResults(state, sent, response) {
   const results = Array.isArray(response?.resultados) ? response.resultados : [];
@@ -123,6 +123,32 @@ export async function synchronizePhotos(session, work, uploader = uploadPhoto, r
         return current;
       });
     }
+  });
+}
+// Aprovar/rejeitar so' funciona online (chamada imediata, nao entra na fila) - e' uma
+// decisao pontual do conferente, nao um dado de formulario para acumular offline.
+export async function reviewCorrectionRecord(session, work, record, approved, reviewedBy, notes, reviewer = reviewCorrection) {
+  tokenOf(session);
+  return lock(session.account, async () => {
+    const result = await reviewer(session, work, record.id, record.syncVersion, approved, reviewedBy, notes);
+    await changeState(session.account, current => {
+      const r = current.records.find(x => x.idLocal === record.idLocal);
+      if (!r) return current;
+      if (result.sucesso === true && result.conflito === false) {
+        r.dados = { ...r.dados, ...(result.dados || {}) };
+        r.syncVersion = result.versao;
+        r.atualizadoEm = result.atualizadoEm;
+      } else if (result.conflito === true) {
+        r.status = 'conflito';
+        r.server = structuredClone(result);
+        r.error = result.motivo || 'A versão do servidor mudou. Compare antes de decidir.';
+        const queued = current.queue.find(q => q.idLocal === r.idLocal);
+        if (queued) queued.phase = 'conflict'; else current.queue.push({ idLocal: r.idLocal, work, phase: 'conflict' });
+      }
+      return current;
+    });
+    if (result.sucesso !== true) throw new Error(result.motivo || 'Não foi possível confirmar a conferência.');
+    return result;
   });
 }
 export function resolveRecord(account, idLocal, choice) {

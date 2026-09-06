@@ -199,5 +199,30 @@ try {
     assert.equal(result.afterUpload.photoFileId, 'FILE-1'); assert.equal(result.afterUpload.syncVersion, 2); assert.equal(result.afterUpload.photo, undefined);
     assert.equal(result.afterConflict.status, 'conflito'); assert.deepEqual(result.afterConflict.serverDados, { description: 'servidor-mudou', photoFileId: 'FILE-1' });
   });
+  await test('Conferir correção: aprova com sucesso e trata conflito - sempre chamada imediata (nunca fila)', async page => {
+    const result = await page.evaluate(async () => {
+      const db = await import('./db.js'), sync = await import('./sync.js');
+      await db.changeState('a', s => db.mergeDownload(s, 'w', { obra: { meta: {} }, registros: [{ id: 'ISS-1', versao: 1, dados: { description: 'x', correctionStatus: 'awaiting_review', correctionReportedBy: 'Prestadora X', correctionNotes: 'Trocado o disjuntor' } }] }));
+      const record = (await db.stateOf('a')).records[0];
+      const session = { account: 'a', token: 'x', sessionExpiresAt: '2099-01-01' };
+      const calls = [];
+      await sync.reviewCorrectionRecord(session, 'w', record, true, 'Fulano', '', async (_, __, issueId, versao, aprovada, reviewedBy, notes) => {
+        calls.push({ issueId, versao, aprovada, reviewedBy, notes });
+        return { sucesso: true, conflito: false, id: issueId, versao: versao + 1, atualizadoEm: 'agora', dados: { description: 'x', correctionStatus: 'done', done: true } };
+      });
+      const afterApprove = (await db.stateOf('a')).records[0];
+      await db.changeState('a', s => db.mergeDownload(s, 'w', { obra: { meta: {} }, registros: [{ id: 'ISS-2', versao: 1, dados: { description: 'y', correctionStatus: 'awaiting_review' } }] }));
+      const record2 = (await db.stateOf('a')).records.find(r => r.id === 'ISS-2');
+      let conflitoErro;
+      try {
+        await sync.reviewCorrectionRecord(session, 'w', record2, false, 'Fulano', 'Não ficou bom', async (_, __, issueId, versao) => ({ sucesso: false, conflito: true, idServidor: issueId, versao: versao + 1, dados: { description: 'servidor-mudou' } }));
+      } catch (e) { conflitoErro = e.message; }
+      const afterConflict = (await db.stateOf('a')).records.find(r => r.id === 'ISS-2');
+      return { calls, afterApprove: { correctionStatus: afterApprove.dados.correctionStatus, syncVersion: afterApprove.syncVersion }, conflitoErro, afterConflictStatus: afterConflict.status };
+    });
+    assert.deepEqual(result.calls, [{ issueId: 'ISS-1', versao: 1, aprovada: true, reviewedBy: 'Fulano', notes: '' }]);
+    assert.equal(result.afterApprove.correctionStatus, 'done'); assert.equal(result.afterApprove.syncVersion, 2);
+    assert.ok(result.conflitoErro); assert.equal(result.afterConflictStatus, 'conflito');
+  });
   console.log(`${count} cenários passaram.`);
 } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }

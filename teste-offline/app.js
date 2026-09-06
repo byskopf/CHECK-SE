@@ -1,6 +1,7 @@
 import { FIELDS, login, listWorks, download, validSession, editable, fetchPhoto } from './offline-api.js';
 import { read, mutate, stateOf, changeState, lock, saveRecord, completeRecord, mergeDownload, setLocalPhoto, removePhotoIntent } from './db.js';
-import { synchronize, synchronizePhotos, resolveRecord } from './sync.js';
+import { synchronize, synchronizePhotos, reviewCorrectionRecord, resolveRecord } from './sync.js';
+const CORRECTION_LABELS = { awaiting_correction: 'com a prestadora', awaiting_review: 'em conferência', rejected: 'rejeitada' };
 const $ = id => document.getElementById(id);
 let session, state, selected = '', editing = null, busy = false;
 const photoCache = new Map(), openPhotos = new Set(), photoObjectUrls = new Map();
@@ -84,6 +85,25 @@ function photoSection(record) {
   }));
   return wrap;
 }
+// So' aparece quando a prestadora ja reportou (awaiting_review) - enviar o lote pra ela
+// continua so' pelo app principal. Aprovar/rejeitar precisa de conexao na hora do clique.
+function correctionSection(record) {
+  if (!record.id || record.dados?.correctionStatus !== 'awaiting_review' || ['conflito', 'erro'].includes(record.status)) return null;
+  const wrap = document.createElement('div'); wrap.className = 'review-box';
+  wrap.append(node('p', `Correção reportada por ${record.dados.correctionReportedBy || 'não informado'}: ${record.dados.correctionNotes || 'sem observação'}`, 'hint'));
+  const reviewerInput = document.createElement('input'); reviewerInput.placeholder = 'Seu nome (quem está conferindo)';
+  const notesInput = document.createElement('textarea'); notesInput.rows = 2; notesInput.placeholder = 'Observação (obrigatória se rejeitar)';
+  wrap.append(reviewerInput, notesInput);
+  const decide = approved => async () => {
+    const reviewedBy = reviewerInput.value.trim();
+    if (!reviewedBy) throw new Error('Informe quem está conferindo.');
+    const notes = notesInput.value.trim();
+    if (!approved && !notes) throw new Error('Informe o motivo da rejeição.');
+    await reviewCorrectionRecord(session, selected, record, approved, reviewedBy, notes);
+  };
+  wrap.append(action('Aprovar', decide(true)), action('Rejeitar', decide(false)));
+  return wrap;
+}
 async function refresh() {
   network();
   $('workspace').hidden = !session?.account;
@@ -109,9 +129,12 @@ async function refresh() {
     const card = document.createElement('article');
     card.append(node('span', record.status, 'badge ' + record.status), node('h3', record.dados.description || '(sem descrição)'), node('p', `${record.dados.module || ''} • ${record.dados.date || ''}`));
     if (record.dados.done) card.append(node('span', 'concluída', 'badge concluida'));
+    else if (CORRECTION_LABELS[record.dados.correctionStatus]) card.append(node('span', CORRECTION_LABELS[record.dados.correctionStatus], 'badge correcao'));
     if (record.dados.observations) card.append(node('p', record.dados.observations));
     const details = document.createElement('details'); details.append(node('summary', 'Ver dados locais'), node('pre', JSON.stringify(record.dados, null, 2))); card.append(details);
     card.append(photoSection(record));
+    const review = correctionSection(record);
+    if (review) card.append(review);
     if (record.error) card.append(node('p', record.error));
     if (record.photoError) card.append(node('p', 'Foto: ' + record.photoError));
     if (['sincronizado', 'pendente'].includes(record.status) && !record.dados.done) {

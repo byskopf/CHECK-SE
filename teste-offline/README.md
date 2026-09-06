@@ -62,6 +62,11 @@ Base fixa (produção, desde 2026-09-05):
   lote de texto — a foto é grande demais para ir junto. Usa o mesmo controle de versão
   otimista: se a pendência mudou no meio-tempo, vira conflito em vez de sobrescrever. Some
   do Drive ao concluir a pendência, mesma regra do app principal.
+- **Conferir correção** (Aprovar/Rejeitar): só aparece quando a pendência está "em
+  conferência" (a prestadora já reportou o que fez). Chamada imediata — precisa de conexão
+  na hora do clique, não entra na fila offline. Aprovar conclui a pendência (apaga fotos,
+  mesma regra); rejeitar exige o motivo e devolve para a prestadora. Enviar o lote para a
+  prestadora (gerar o link de WhatsApp) continua só pelo app principal.
 
 ## Preservação e limites
 
@@ -77,8 +82,8 @@ Base fixa (produção, desde 2026-09-05):
 - Dados pertencem a este navegador/perfil. Limpar os dados do site ou usar navegação privada
   pode removê-los. Contas são separadas logicamente, sem criptografia local adicional.
 - Requer IndexedDB, Service Worker e Web Locks (Chrome/Edge atuais). Não inclui exclusão
-  offline, envio/conferência com a prestadora, relatórios ou sincronização com a página
-  fechada. Concluir pendência e foto já funcionam (ver "Contrato implementado" acima).
+  offline, envio do lote à prestadora, relatórios ou sincronização com a página fechada.
+  Concluir pendência, foto e conferir correção já funcionam (ver "Contrato implementado").
 - Em futura atualização, incremente o nome do cache do worker. O novo worker aguarda
   fechamento das abas antigas antes de assumir, evitando misturar versões durante trabalho.
 

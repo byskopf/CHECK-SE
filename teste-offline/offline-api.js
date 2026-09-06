@@ -90,3 +90,6 @@ export async function fetchPhoto(session, substationKey, issueId) {
   if (typeof data.base64 !== 'string' || !data.base64) throw new ApiError('Foto inválida recebida do servidor.', 'protocol');
   return `data:${data.contentType || 'image/jpeg'};base64,${data.base64}`;
 }
+export function reviewCorrection(session, substationKey, issueId, versao, approved, reviewedBy, notes) {
+  return request('conferirCorrecaoOffline', { accessCode: tokenOf(session), substationKey, issueId, versao, aprovada: approved, reviewedBy, notes }, true);
+}

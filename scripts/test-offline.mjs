@@ -224,5 +224,36 @@ try {
     assert.equal(result.afterApprove.correctionStatus, 'done'); assert.equal(result.afterApprove.syncVersion, 2);
     assert.ok(result.conflitoErro); assert.equal(result.afterConflictStatus, 'conflito');
   });
+  await test('Gerar PDF da obra: agrupa por módulo, soma o resumo por situação e baixa o arquivo', async page => {
+    let capturedPayload;
+    await page.route('https://script.google.com/**', async route => {
+      const req = route.request(), api = new URL(req.url()).searchParams.get('api');
+      if (api === 'apiLoginBase') return route.fulfill({ json: { ok: true, token: 'SES-pdf', base: { id: 'p' }, sessionExpiresAt: new Date(Date.now() + 3600000).toISOString() } });
+      if (api === 'listarObrasOffline') return route.fulfill({ json: { ok: true, obras: [{ chave: 'obra-pdf', nome: 'Obra PDF' }] } });
+      if (api === 'getDadosOffline') return route.fulfill({ json: { ok: true, substationKey: 'obra-pdf', obra: { meta: { se: 'SE PDF', obra: 'Obra Teste' }, modules: ['Mod A'] }, registros: [
+        { id: 'ISS-1', versao: 1, dados: { module: 'Mod A', description: 'Pendencia aberta', seq: 2, correctionStatus: 'open' } },
+        { id: 'ISS-2', versao: 1, dados: { module: 'Mod A', description: 'Pendencia concluida', seq: 1, done: true, correctionStatus: 'done' } }
+      ], geradoEm: '2026-09-05T12:00:00Z' } });
+      if (api === 'gerarRelatorioPdfOffline') {
+        assert.equal(req.method(), 'POST'); assert.equal(req.headers()['content-type'], 'text/plain;charset=utf-8');
+        capturedPayload = req.postDataJSON().payload;
+        return route.fulfill({ json: { ok: true, nome: 'CHECK-SE_teste.pdf', base64: btoa('PDF-FALSO') } });
+      }
+      await route.fulfill({ json: { ok: false, error: 'api não mockada: ' + api } });
+    });
+    await page.locator('[name=username]').fill('t'); await page.locator('[name=password]').fill('t');
+    await page.getByRole('button', { name: 'Entrar no teste' }).click();
+    await page.waitForFunction(() => document.getElementById('session-status').textContent.includes('Conta: p'));
+    await page.locator('#list').click(); await page.waitForFunction(() => document.querySelectorAll('#works option').length === 2);
+    await page.locator('#works').selectOption('obra-pdf'); await page.locator('#download').click();
+    await page.waitForFunction(() => document.querySelector('#counts').textContent.includes('2 sincronizado'));
+    const [download] = await Promise.all([page.waitForEvent('download'), page.locator('#report').click()]);
+    assert.equal(download.suggestedFilename(), 'CHECK-SE_teste.pdf');
+    assert.deepEqual(capturedPayload.grupos.length, 1);
+    assert.equal(capturedPayload.grupos[0].modulo, 'MOD A');
+    assert.deepEqual(capturedPayload.grupos[0].itens.map(i => i.descricao), ['Pendencia concluida', 'Pendencia aberta']);
+    assert.deepEqual(capturedPayload.resumo, { abertas: 1, comPrestadora: 0, emConferencia: 0, rejeitadas: 0, concluidas: 1, total: 2 });
+    assert.equal(capturedPayload.semColunaCorrecao, true);
+  });
   console.log(`${count} cenários passaram.`);
 } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }

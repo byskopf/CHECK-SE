@@ -1,7 +1,45 @@
-import { FIELDS, login, listWorks, download, validSession, editable, fetchPhoto } from './offline-api.js';
+import { FIELDS, login, listWorks, download, validSession, editable, fetchPhoto, generateReport } from './offline-api.js';
 import { read, mutate, stateOf, changeState, lock, saveRecord, completeRecord, mergeDownload, setLocalPhoto, removePhotoIntent } from './db.js';
 import { synchronize, synchronizePhotos, reviewCorrectionRecord, resolveRecord } from './sync.js';
 const CORRECTION_LABELS = { awaiting_correction: 'com a prestadora', awaiting_review: 'em conferência', rejected: 'rejeitada' };
+const WORKFLOW_LABELS = { open: 'Em aberto', awaiting_correction: 'Com a prestadora', awaiting_review: 'Em conferência', rejected: 'Rejeitada', done: 'Concluída' };
+const workflowStatusOf = dados => dados.correctionStatus || (dados.done ? 'done' : 'open');
+// Mesmo payload que o relatorio DELE no app principal manda pro montador (grupos por modulo,
+// resumo por situacao) - so' que sempre a obra inteira, sem o filtro de modulo/situacao nem o
+// codigo do lote (o laboratorio offline nao tem lote nem visita/tecnicos para montar sozinho).
+function buildReportPayload(work, records) {
+  const grupos = [];
+  for (const r of records) {
+    const mod = String(r.dados.module || '').trim().toUpperCase() || 'SEM MÓDULO';
+    let g = grupos.find(x => x.modulo === mod);
+    if (!g) { g = { modulo: mod, itens: [] }; grupos.push(g); }
+    g.itens.push({ numero: r.dados.seq || '—', pagina: r.dados.pg || '—', referencia: r.dados.reference || '—', descricao: r.dados.description || '—', observacoes: r.dados.observations || '', situacao: WORKFLOW_LABELS[workflowStatusOf(r.dados)] || 'Em aberto' });
+  }
+  grupos.forEach(g => g.itens.sort((a, b) => (Number(a.numero) || 0) - (Number(b.numero) || 0)));
+  grupos.sort((a, b) => a.modulo.localeCompare(b.modulo, 'pt-BR'));
+  const conta = status => records.filter(r => workflowStatusOf(r.dados) === status).length;
+  const meta = work.obra?.meta || {};
+  return {
+    obra: { se: meta.se || '', obra: meta.obra || '', empresa: meta.company || '', semData: true, semPessoas: true, lote: '', filtro: '', sufixoArquivo: '', tituloResumo: 'Resumo da obra', temPep: true, pep: meta.pep || '', observacoes: meta.notes || '' },
+    resumo: { abertas: conta('open'), comPrestadora: conta('awaiting_correction'), emConferencia: conta('awaiting_review'), rejeitadas: conta('rejected'), concluidas: conta('done'), total: records.length },
+    semColunaCorrecao: true,
+    grupos
+  };
+}
+async function downloadReport() {
+  if (!selected) throw new Error('Selecione uma obra.');
+  const work = state.works.find(w => w.chave === selected);
+  if (!work?.downloaded) throw new Error('Baixe a obra antes de gerar o relatório.');
+  const records = state.records.filter(r => r.work === selected);
+  if (!records.length) throw new Error('Esta obra ainda não tem pendências no aparelho.');
+  const payload = buildReportPayload(work, records);
+  const result = await generateReport(session, payload);
+  const bytes = Uint8Array.from(atob(result.base64), c => c.charCodeAt(0));
+  const blob = new Blob([bytes], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a'); link.href = url; link.download = result.nome; link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
 const $ = id => document.getElementById(id);
 let session, state, selected = '', editing = null, busy = false;
 const photoCache = new Map(), openPhotos = new Set(), photoObjectUrls = new Map();
@@ -238,6 +276,7 @@ $('record-form').onsubmit = event => {
   });
 };
 $('sync').onclick = () => run(syncSelected);
+$('report').onclick = () => run(async () => { await downloadReport(); message('PDF gerado.'); });
 $('export').onclick = () => run(async () => {
   const current = await stateOf(session.account);
   const blob = new Blob([JSON.stringify({ ambiente: 'teste', exportadoEm: new Date().toISOString(), ...current }, null, 2)], { type: 'application/json' });

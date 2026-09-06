@@ -93,3 +93,6 @@ export async function fetchPhoto(session, substationKey, issueId) {
 export function reviewCorrection(session, substationKey, issueId, versao, approved, reviewedBy, notes) {
   return request('conferirCorrecaoOffline', { accessCode: tokenOf(session), substationKey, issueId, versao, aprovada: approved, reviewedBy, notes }, true);
 }
+export function generateReport(session, payload) {
+  return request('gerarRelatorioPdfOffline', { accessCode: tokenOf(session), payload }, true);
+}

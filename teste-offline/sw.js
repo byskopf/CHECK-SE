@@ -1,5 +1,5 @@
 const PREFIX = 'check-se-offline-test-';
-const CACHE = PREFIX + 'v3';
+const CACHE = PREFIX + 'v4';
 const ROOT = new URL('./', self.location.href);
 const FILES = ['index.html', 'styles.css', 'app.js', 'db.js', 'offline-api.js', 'sync.js', 'manifest.json', 'icon-192.png', 'icon-512.png'].map(path => new URL(path, ROOT).href);
 self.addEventListener('install', event => {

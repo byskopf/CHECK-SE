@@ -67,6 +67,11 @@ Base fixa (produção, desde 2026-09-05):
   na hora do clique, não entra na fila offline. Aprovar conclui a pendência (apaga fotos,
   mesma regra); rejeitar exige o motivo e devolve para a prestadora. Enviar o lote para a
   prestadora (gerar o link de WhatsApp) continua só pelo app principal.
+- **Gerar PDF da obra**: chamada imediata (precisa de conexão), monta o relatório com TODAS
+  as pendências baixadas no aparelho (sem o filtro de módulo/situação que o app principal
+  oferece, sem código de lote, sem a linha "Visita técnica/Técnicos" — informações que o
+  laboratório offline não tem para montar sozinho). Reaproveita o MESMO gerador de PDF do
+  app principal no servidor; o cliente só monta grupos por módulo e o resumo por situação.
 
 ## Preservação e limites
 
@@ -82,8 +87,8 @@ Base fixa (produção, desde 2026-09-05):
 - Dados pertencem a este navegador/perfil. Limpar os dados do site ou usar navegação privada
   pode removê-los. Contas são separadas logicamente, sem criptografia local adicional.
 - Requer IndexedDB, Service Worker e Web Locks (Chrome/Edge atuais). Não inclui exclusão
-  offline, envio do lote à prestadora, relatórios ou sincronização com a página fechada.
-  Concluir pendência, foto e conferir correção já funcionam (ver "Contrato implementado").
+  offline, envio do lote à prestadora nem sincronização com a página fechada. Concluir
+  pendência, foto, conferir correção e gerar PDF já funcionam (ver "Contrato implementado").
 - Em futura atualização, incremente o nome do cache do worker. O novo worker aguarda
   fechamento das abas antigas antes de assumir, evitando misturar versões durante trabalho.
 

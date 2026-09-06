@@ -1,3 +1,9 @@
 {
-  "name": "check-se-pwa-validation", "private": true
+  "name": "check-se",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Portal PWA de instalação/abertura do CHECK-SE, publicado no GitHub Pages.",
+  "scripts": {
+    "validate": "node scripts/validate-pwa.mjs"
+  }
 }

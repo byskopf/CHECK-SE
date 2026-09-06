@@ -1,15 +1,15 @@
 # CHECK-SE
 
-Aplicativo web para ... (substitua por uma descrição curta do que o projeto faz).
+Portal de instalação (PWA) do CHECK-SE — abre o aplicativo de comissionamento inteligente de subestações elétricas hospedado no Google Apps Script.
 
-[![Build](https://github.com/byskopf/CHECK-SE/actions/workflows/ci.yml/badge.svg)](https://github.com/byskopf/CHECK-SE/actions)
-[![Pages](https://github.com/byskopf/CHECK-SE/actions/workflows/pages.yml/badge.svg)](https://github.com/byskopf/CHECK-SE)
-[![License](https://img.shields.io/badge/license-NONE-lightgrey.svg)](./LICENSE)
+[![Validar PWA](https://github.com/byskopf/CHECK-SE/actions/workflows/validate-pwa.yml/badge.svg)](https://github.com/byskopf/CHECK-SE/actions/workflows/validate-pwa.yml)
+[![Monitorar disponibilidade](https://github.com/byskopf/CHECK-SE/actions/workflows/monitor.yml/badge.svg)](https://github.com/byskopf/CHECK-SE/actions/workflows/monitor.yml)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 Resumo
 -----
 
-CHECK-SE é uma aplicação web (PWA) que fornece ... (adicione uma descrição curta das features principais: offline, checagem, etc.).
+Este repositório contém apenas a **tela de lançamento** do CHECK-SE: uma página estática instalável como PWA (ícone, tela cheia, cache offline da própria tela via service worker) que redireciona para o aplicativo real, publicado como Web App do Google Apps Script. A lógica de negócio (pendências, obras, sincronização, prestadoras) vive no Apps Script, fora deste repositório — aqui só cuidamos do "portão de entrada" e da experiência de instalação/atualização do PWA.
 
 Demo
 ----
@@ -54,10 +54,10 @@ Se quiser, posso adicionar `CONTRIBUTING.md` e templates de issue/PR.
 Checklist de qualidade sugerida
 -------------------------------
 
-- [ ] Adicionar LICENSE (ex.: MIT)
-- [ ] Adicionar README.md (feito)
-- [ ] Adicionar .gitignore
-- [ ] Configurar CI (Lint, Tests, Lighthouse)
+- [x] Adicionar LICENSE (MIT)
+- [x] Adicionar README.md (feito)
+- [x] Adicionar .gitignore
+- [x] Configurar CI (validação de PWA + monitoramento de disponibilidade)
 - [ ] Modularizar `app.js` e adicionar bundler para produção
 - [ ] Otimizar imagens (WebP, srcset)
 - [ ] Rodar testes de acessibilidade (axe / Lighthouse)
@@ -65,7 +65,7 @@ Checklist de qualidade sugerida
 Licença
 -------
 
-Este repositório ainda não contém um arquivo de licença. Recomenda-se adicionar um `LICENSE` (por exemplo MIT) se você quiser permitir o uso/redistribuição.
+Este repositório é distribuído sob a licença MIT — veja [`LICENSE`](./LICENSE).
 
 Contato
 -------

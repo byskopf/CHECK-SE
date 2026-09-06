@@ -18,15 +18,5 @@ jobs:
       - name: Baixar o código
         uses: actions/checkout@v4
 
-      - name: Preparar Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Validar estrutura do PWA
-        run: node scripts/validate-pwa.mjs
-
-      - name: Validar sintaxe JavaScript
-        run: |
-          node --check app.js
-          node --check sw.js
+      - name: Validar PWA
+        uses: ./.github/actions/validate-pwa

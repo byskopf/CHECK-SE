@@ -1,44 +1,44 @@
 CHECK-SE — PWA PARA GITHUB PAGES
 
-Este pacote deixa o endereço abaixo com o mesmo visual moderno e o mesmo
-comportamento da versão preparada para a Netlify:
+Este repositório publica automaticamente o portal de instalação do CHECK-SE em:
 https://byskopf.github.io/CHECK-SE/
 
-O pacote já está ajustado para o caminho obrigatório /CHECK-SE/ e o endereço do
-aplicativo Google Apps Script já está configurado no arquivo app.js.
+O GitHub Pages deste repositório está configurado para publicar direto da
+branch "main" (pasta raiz). Isso significa que qualquer commit enviado para a
+main (`git push`) já atualiza o site publicado sozinho, em geral em menos de
+um minuto — não é preciso baixar ZIP nem subir arquivo por arquivo pela
+interface do GitHub.
 
-COMO PUBLICAR
-1. Baixe e descompacte este arquivo ZIP no computador.
-2. Abra o repositório https://github.com/byskopf/CHECK-SE na branch main.
-3. Clique em Add file e depois em Upload files.
-4. Envie TODOS OS ARQUIVOS que estão dentro da pasta descompactada.
-5. Confirme a substituição do index.html existente e finalize o commit.
-6. Aguarde a publicação do GitHub Pages.
-7. Abra https://byskopf.github.io/CHECK-SE/ e atualize a página uma vez.
+COMO PUBLICAR UMA MUDANÇA
+1. Edite os arquivos localmente (index.html, app.js, styles.css, sw.js, etc.).
+2. Se mudar a versão do app, atualize PWA_VERSION em app.js e o comentário de
+   versão em sw.js (o workflow "Criar tag de versão" confere isso).
+3. Faça commit e `git push` para a branch main.
+4. O workflow "Validar PWA" roda sozinho a cada push e confere a estrutura do
+   PWA e a sintaxe dos arquivos JS.
+5. Aguarde a publicação do GitHub Pages (normalmente menos de um minuto) e
+   abra https://byskopf.github.io/CHECK-SE/ para conferir.
 
-ATENÇÃO
-Não envie somente o arquivo ZIP para o repositório. O GitHub Pages não abre os
-arquivos que estão dentro do ZIP: ele publica o index.html solto na raiz. Os
-arquivos deste pacote precisam ficar diretamente na raiz do repositório.
-
-Os ZIPs antigos que já estão no repositório não impedem o site de funcionar,
-mas também não alteram a página publicada.
+CRIANDO UMA VERSÃO (TAG)
+Quando quiser marcar uma versão oficial, rode manualmente o workflow "Criar
+tag de versão" (aba Actions do repositório) informando o número no formato
+X.Y.Z. Ele confere se os arquivos já estão nessa versão e cria a tag vX.Y.Z.
 
 ARQUIVOS IMPORTANTES
-- index.html: nova tela inicial moderna;
+- index.html: tela inicial do portal;
 - styles.css: visual responsivo;
-- app.js: instalação e abertura do CHECK-SE;
+- app.js: instalação e abertura do CHECK-SE (contém a URL do Apps Script);
 - manifest.json: configuração PWA no caminho /CHECK-SE/;
 - sw.js: cache offline da tela inicial;
 - .nojekyll: informa ao GitHub Pages que os arquivos são estáticos;
-- ícones PNG e SVG: ícone correto do aplicativo.
+- ícones PNG e SVG: ícone do aplicativo.
 
-ATUALIZAÇÃO DA VERSÃO ANTIGA
-O navegador pode manter arquivos antigos por alguns instantes. Depois de
-publicar, abra o endereço com internet e atualize uma vez. Se ainda aparecer a
-tela antiga, feche a aba, abra novamente e faça uma nova atualização.
+ATUALIZAÇÃO DA VERSÃO ANTIGA NO NAVEGADOR
+O navegador pode manter arquivos antigos em cache por alguns instantes depois
+da publicação. Se ainda aparecer a tela antiga, feche a aba, abra novamente e
+atualize uma vez.
 
 OBSERVAÇÃO
-O modo offline protege apenas esta tela inicial hospedada no GitHub Pages. O
-conteúdo do Google Apps Script pertence a outro endereço e continua usando o
-próprio sistema offline do CHECK-SE.
+O modo offline deste pacote protege apenas esta tela inicial hospedada no
+GitHub Pages. O conteúdo do Google Apps Script pertence a outro endereço e
+continua usando o próprio sistema offline do CHECK-SE.

@@ -12,12 +12,14 @@ formato `vX.Y.Z`.
 - Workflow manual e seguro para criação de tags de versão.
 - Formulários de Issue para relatos de problemas e sugestões de melhoria.
 
-## [1.1.0] - 2026-09-04
+## 1.1.0 - 2026-09-04
+
+> Nota: os arquivos já estão na versão 1.1.0, mas a tag `v1.1.0` ainda não foi
+> criada neste repositório (rode o workflow "Criar tag de versão" para gerá-la).
+> O link de release será adicionado assim que a tag existir.
 
 ### Alterado
 
 - Melhorado o ciclo de atualização do PWA.
 - Adicionados avisos e recuperação de abertura do aplicativo.
 - Ajustada a experiência quando o portal está offline.
-
-[1.1.0]: https://github.com/byskopf/CHECK-SE/releases/tag/v1.1.0

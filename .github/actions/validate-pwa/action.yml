@@ -1,0 +1,20 @@
+name: Validar PWA
+description: Valida a estrutura do PWA, o manifesto e a sintaxe dos arquivos JavaScript.
+
+runs:
+  using: composite
+  steps:
+    - name: Preparar Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    - name: Validar estrutura do PWA
+      shell: bash
+      run: node scripts/validate-pwa.mjs
+
+    - name: Validar sintaxe JavaScript
+      shell: bash
+      run: |
+        node --check app.js
+        node --check sw.js

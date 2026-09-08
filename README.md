@@ -31,6 +31,7 @@ Estrutura do repositório
 ------------------------
 
 - index.html — ponto de entrada
+- app-config.js — versão do PWA e endereço oficial do Apps Script
 - app.js — lógica principal (recomenda-se modularizar)
 - styles.css — estilos
 - sw.js — service worker (PWA/offline)
@@ -58,8 +59,10 @@ Checklist de qualidade sugerida
 - [x] Adicionar README.md (feito)
 - [x] Adicionar .gitignore
 - [x] Configurar CI (validação de PWA + monitoramento de disponibilidade)
+- [x] Centralizar versão do PWA e endereço do Apps Script em `app-config.js`
+- [x] Validar automaticamente a capa e os metadados de compartilhamento
 - [ ] Modularizar `app.js` e adicionar bundler para produção
-- [ ] Otimizar imagens (WebP, srcset)
+- [ ] Otimizar outras imagens (WebP, srcset)
 - [ ] Rodar testes de acessibilidade (axe / Lighthouse)
 
 Licença

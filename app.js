@@ -1,8 +1,12 @@
 (function () {
   'use strict';
 
-  var PWA_VERSION = '1.1.0';
-  var APP_URL = 'https://script.google.com/macros/s/AKfycbx7ReYi1OoXTvO2e-FLXczg-Ube0WZcjJSWe8HGlWbQtUof1F-1dOUQ-kqrwZQPjb6D/exec';
+  var config = window.CHECK_SE_CONFIG;
+  if (!config || !config.version || !config.appUrl) {
+    throw new Error('Configuração do CHECK-SE ausente ou inválida.');
+  }
+  var PWA_VERSION = config.version;
+  var APP_URL = config.appUrl;
   var deferredInstallPrompt = null;
   var serviceWorkerRegistration = null;
   var reloadAfterUpdate = false;

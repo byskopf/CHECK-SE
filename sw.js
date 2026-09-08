@@ -1,13 +1,18 @@
 /* Service Worker for CHECK-SE
-   PWA 1.1.0
+   PWA 1.2.0
    - Usa o escopo atual para montar as URLs do app shell
    - Mantém o cache do CHECK-SE isolado de outros PWAs no mesmo domínio
    - Cacheia cada navegação pela própria URL, sem sobrescrever o index.html
    - Permite atualização assistida pelo portal
 */
 
+importScripts('app-config.js');
+
+var PWA_VERSION = self.CHECK_SE_CONFIG && self.CHECK_SE_CONFIG.version;
+if (!PWA_VERSION) throw new Error('Versão do CHECK-SE não configurada.');
+
 var CACHE_PREFIX = 'check-se-launcher-';
-var CACHE_NAME = CACHE_PREFIX + 'pwa-1.1.0-20260904';
+var CACHE_NAME = CACHE_PREFIX + 'pwa-' + PWA_VERSION;
 
 var scopeBase;
 try {
@@ -19,6 +24,7 @@ try {
 
 var APP_SHELL = [
   new URL('index.html', scopeBase).href,
+  new URL('app-config.js', scopeBase).href,
   new URL('styles.css', scopeBase).href,
   new URL('app.js', scopeBase).href,
   new URL('manifest.json', scopeBase).href,

@@ -19,6 +19,9 @@ jobs:
   verificar:
     runs-on: ubuntu-latest
     steps:
+      - name: Baixar configuração
+        uses: actions/checkout@v4
+
       - name: Portal de instalação (GitHub Pages)
         run: |
           status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "https://byskopf.github.io/CHECK-SE/")
@@ -30,7 +33,8 @@ jobs:
 
       - name: App oficial (Apps Script - produção)
         run: |
-          body=$(curl -s --max-time 30 "https://script.google.com/macros/s/AKfycbx7ReYi1OoXTvO2e-FLXczg-Ube0WZcjJSWe8HGlWbQtUof1F-1dOUQ-kqrwZQPjb6D/exec")
+          app_url=$(node -p "require('./app-config.js').appUrl")
+          body=$(curl -s --max-time 30 "$app_url")
           tamanho=${#body}
           echo "Tamanho recebido: $tamanho bytes"
           # A pagina normal do app tem mais de 300 KB. Uma resposta pequena costuma

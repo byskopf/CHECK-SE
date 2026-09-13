@@ -1,5 +1,5 @@
 /* Service Worker for CHECK-SE
-   PWA 1.2.0
+   PWA 1.2.1
    - Usa o escopo atual para montar as URLs do app shell
    - Mantém o cache do CHECK-SE isolado de outros PWAs no mesmo domínio
    - Cacheia cada navegação pela própria URL, sem sobrescrever o index.html
@@ -27,6 +27,7 @@ var APP_SHELL = [
   new URL('app-config.js', scopeBase).href,
   new URL('styles.css', scopeBase).href,
   new URL('app.js', scopeBase).href,
+  new URL('share.js', scopeBase).href,
   new URL('manifest.json', scopeBase).href,
   new URL('favicon.svg', scopeBase).href,
   new URL('icon-192.png', scopeBase).href,

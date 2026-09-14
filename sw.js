@@ -1,5 +1,5 @@
 /* Service Worker for CHECK-SE
-   PWA 1.2.1
+   PWA 1.2.2
    - Usa o escopo atual para montar as URLs do app shell
    - Mantém o cache do CHECK-SE isolado de outros PWAs no mesmo domínio
    - Cacheia cada navegação pela própria URL, sem sobrescrever o index.html

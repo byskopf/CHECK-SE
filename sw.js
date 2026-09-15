@@ -6,7 +6,7 @@
    - Permite atualização assistida pelo portal
 */
 
-importScripts('app-config.js');
+importScripts('app-config.js?v=1.2.6');
 
 var PWA_VERSION = self.CHECK_SE_CONFIG && self.CHECK_SE_CONFIG.version;
 if (!PWA_VERSION) throw new Error('Versão do CHECK-SE não configurada.');

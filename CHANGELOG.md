@@ -14,6 +14,8 @@ formato `vX.Y.Z`.
 
 ### Alterado
 
+- Versão 1.2.6 com atualização do Service Worker sem cache HTTP, verificação ao retomar o aplicativo e proteção contra links ou versões divergentes.
+- Corrigido o workflow manual de criação de tags para usar a versão centralizada em `app-config.js`.
 - Versão 1.2.5 com instalação mais direta no Android e instruções em três passos.
 - A tela de abertura agora é removida corretamente ao retornar ao portal.
 - A verificação de atualização também ocorre quando o usuário volta ao PWA.

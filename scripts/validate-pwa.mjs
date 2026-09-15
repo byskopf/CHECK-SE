@@ -37,10 +37,18 @@ try {
 }
 
 if (manifest) {
-  for (const field of ['name', 'short_name', 'start_url', 'scope', 'display', 'icons']) {
+  for (const field of ['id', 'name', 'short_name', 'start_url', 'scope', 'display', 'icons']) {
     if (manifest[field] === undefined || manifest[field] === '') {
       failures.push(`Campo obrigatório ausente no manifest.json: ${field}`);
     }
+  }
+
+  if (!['./', '/CHECK-SE/'].includes(manifest.id) || !['./', '/CHECK-SE/'].includes(manifest.scope)) {
+    failures.push('O CHECK-SE deve manter identidade e escopo próprios.');
+  }
+
+  if (manifest.display !== 'standalone') {
+    failures.push('O CHECK-SE deve continuar instalável em modo standalone.');
   }
 
   if (!Array.isArray(manifest.icons) || manifest.icons.length === 0) {
@@ -110,9 +118,19 @@ const appJavaScript = await readFile('app.js', 'utf8').catch(() => '');
 if (appJavaScript.includes('script.google.com/macros/s/')) {
   failures.push('app.js não deve repetir a URL do Apps Script; use app-config.js.');
 }
+if (!/updateViaCache\s*:\s*['"]none['"]/.test(appJavaScript)) {
+  failures.push('O registro do Service Worker deve ignorar o cache HTTP ao procurar atualizações.');
+}
+if (/href=['"]https:\/\/script\.google\.com\/macros\/s\//i.test(indexHtml)) {
+  failures.push('index.html não deve repetir a implantação do Apps Script; use app-config.js.');
+}
 
-if (!serviceWorker.includes("importScripts('app-config.js')")) {
+const importedConfig = serviceWorker.match(/importScripts\(\s*['"]app-config\.js(?:\?v=([^'"]+))?['"]\s*\)/);
+if (!importedConfig) {
   failures.push('sw.js deve importar app-config.js.');
+}
+if (importedConfig && importedConfig[1] && configVersion && importedConfig[1] !== configVersion[1]) {
+  failures.push('A versão importada pelo sw.js deve corresponder à versão do app-config.js.');
 }
 
 const ogImageMatch = indexHtml.match(/<meta\s+property=['\"]og:image['\"]\s+content=['\"]([^'\"]+)['\"]/i);

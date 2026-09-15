@@ -1,14 +1,15 @@
 /* Service Worker for CHECK-SE
-   PWA 1.2.5
+   PWA 1.2.7
    - Usa o escopo atual para montar as URLs do app shell
    - Mantém o cache do CHECK-SE isolado de outros PWAs no mesmo domínio
    - Cacheia cada navegação pela própria URL, sem sobrescrever o index.html
    - Permite atualização assistida pelo portal
 */
 
-importScripts('app-config.js?v=1.2.6');
+importScripts('app-config.js?v=1.2.7');
 
 var PWA_VERSION = self.CHECK_SE_CONFIG && self.CHECK_SE_CONFIG.version;
+var ICON_VERSION = self.CHECK_SE_CONFIG && self.CHECK_SE_CONFIG.iconVersion || PWA_VERSION;
 if (!PWA_VERSION) throw new Error('Versão do CHECK-SE não configurada.');
 
 var CACHE_PREFIX = 'check-se-launcher-';
@@ -22,6 +23,12 @@ try {
   scopeBase = self.location.origin + '/';
 }
 
+function versionedIconUrl(name) {
+  var iconUrl = new URL(name, scopeBase);
+  iconUrl.searchParams.set('v', ICON_VERSION);
+  return iconUrl.href;
+}
+
 var APP_SHELL = [
   new URL('index.html', scopeBase).href,
   new URL('app-config.js', scopeBase).href,
@@ -30,11 +37,11 @@ var APP_SHELL = [
   new URL('share.js', scopeBase).href,
   new URL('manifest.json', scopeBase).href,
   new URL('favicon.svg', scopeBase).href,
-  new URL('icon-192.png', scopeBase).href,
-  new URL('icon-512.png', scopeBase).href,
-  new URL('icon-maskable-192.png', scopeBase).href,
-  new URL('icon-maskable-512.png', scopeBase).href,
-  new URL('apple-touch-icon.png', scopeBase).href,
+  versionedIconUrl('icon-192.png'),
+  versionedIconUrl('icon-512.png'),
+  versionedIconUrl('icon-maskable-192.png'),
+  versionedIconUrl('icon-maskable-512.png'),
+  versionedIconUrl('apple-touch-icon.png'),
   new URL('offline.html', scopeBase).href
 ];
 

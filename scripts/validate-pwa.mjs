@@ -21,6 +21,15 @@ const requiredFiles = [
 
 const failures = [];
 
+const iconAssetPath = (src) => String(src || '').split(/[?#]/)[0].replace(/^\.\//, '');
+const iconVersionOf = (src) => {
+  try {
+    return new URL(String(src || ''), 'https://pwa.local/').searchParams.get('v');
+  } catch {
+    return null;
+  }
+};
+
 for (const file of requiredFiles) {
   try {
     await access(file, constants.R_OK);
@@ -60,7 +69,7 @@ if (manifest) {
         continue;
       }
       try {
-        await access(icon.src.replace(/^\.\//, ''), constants.R_OK);
+        await access(iconAssetPath(icon.src), constants.R_OK);
       } catch {
         failures.push(`Ícone referenciado no manifest.json não encontrado: ${icon.src}`);
       }
@@ -85,6 +94,29 @@ for (const file of ['index.html', 'app-config.js', 'app.js', 'styles.css', 'mani
 const configSource = await readFile('app-config.js', 'utf8').catch(() => '');
 const configVersion = configSource.match(/version:\s*['\"]([^'\"]+)['\"]/);
 const configAppUrl = configSource.match(/appUrl:\s*['\"]([^'\"]+)['\"]/);
+const configIconVersion = configSource.match(/iconVersion:\s*['"]([^'"]+)['"]/);
+if (!configIconVersion || !/^[0-9A-Za-z._-]+$/.test(configIconVersion[1])) {
+  failures.push('app-config.js deve declarar uma versão de ícones válida.');
+}
+if (manifest && configIconVersion) {
+  const shortcutIcons = Array.isArray(manifest.shortcuts)
+    ? manifest.shortcuts.flatMap((shortcut) => Array.isArray(shortcut.icons) ? shortcut.icons : [])
+    : [];
+  const declaredIcons = [
+    ...(Array.isArray(manifest.icons) ? manifest.icons : []),
+    ...shortcutIcons,
+  ];
+  for (const icon of declaredIcons) {
+    if (iconVersionOf(icon.src) !== configIconVersion[1]) {
+      failures.push('Todos os ícones do CHECK-SE devem usar ?v=' + configIconVersion[1] + ' para atualizar instalações existentes.');
+      break;
+    }
+  }
+  if (!indexHtml.includes('apple-touch-icon.png?v=' + configIconVersion[1])) {
+    failures.push('O ícone Apple Touch deve usar a mesma versão de ícones.');
+  }
+}
+
 
 if (!configVersion || !/^\d+\.\d+\.\d+$/.test(configVersion[1])) {
   failures.push('app-config.js deve declarar uma versão semântica válida.');
@@ -125,6 +157,9 @@ if (/href=['"]https:\/\/script\.google\.com\/macros\/s\//i.test(indexHtml)) {
   failures.push('index.html não deve repetir a implantação do Apps Script; use app-config.js.');
 }
 
+if (!serviceWorker.includes('ICON_VERSION') || !serviceWorker.includes('iconVersion')) {
+  failures.push('O Service Worker deve pré-carregar os ícones usando a versão configurada.');
+}
 const importedConfig = serviceWorker.match(/importScripts\(\s*['"]app-config\.js(?:\?v=([^'"]+))?['"]\s*\)/);
 if (!importedConfig) {
   failures.push('sw.js deve importar app-config.js.');

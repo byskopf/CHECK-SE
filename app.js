@@ -93,6 +93,16 @@
     launchRetry.textContent = 'Tentar novamente';
   }
 
+  function hideLaunchOverlay() {
+    if (launchSlowTimer) {
+      window.clearTimeout(launchSlowTimer);
+      launchSlowTimer = null;
+    }
+    launchOverlay.classList.remove('show');
+    launchOverlay.hidden = true;
+    resetLaunchOverlay();
+  }
+
   function showLaunchOverlay() {
     resetLaunchOverlay();
     launchOverlay.hidden = false;
@@ -132,11 +142,11 @@
     }
 
     if (isAndroid) {
-      return '<p>Se a instalação automática não aparecer:</p>' +
+      return '<p>No Chrome do Android:</p>' +
         '<ol class="install-steps">' +
-        '<li>Abra o menu do navegador.</li>' +
+        '<li>Toque nos três pontos ⋮ no canto superior.</li>' +
         '<li>Escolha “Instalar app” ou “Adicionar à tela inicial”.</li>' +
-        '<li>Confirme a instalação.</li>' +
+        '<li>Toque em “Instalar” para criar o ícone.</li>' +
         '</ol>';
     }
 
@@ -180,8 +190,8 @@
   window.addEventListener('beforeinstallprompt', function (event) {
     event.preventDefault();
     deferredInstallPrompt = event;
-    installButtonText.textContent = 'Instalar aplicativo';
-    installHint.textContent = 'Pronto para instalar com o ícone correto.';
+    installButtonText.textContent = 'Instalar CHECK-SE';
+    installHint.textContent = 'Toque no botão e confirme a instalação do ícone.';
   });
 
   installButton.addEventListener('click', async function () {
@@ -199,7 +209,7 @@
       deferredInstallPrompt = null;
 
       if (choice && choice.outcome === 'accepted') {
-        installButtonText.textContent = 'Aplicativo instalado';
+        installButtonText.textContent = 'Instalação confirmada';
         installHint.textContent = 'Abra o CHECK-SE pelo novo ícone na tela inicial.';
       } else {
         installButtonText.textContent = 'Instalar aplicativo';
@@ -219,6 +229,16 @@
     installButtonText.textContent = 'Aplicativo instalado';
     installButton.disabled = true;
     installHint.textContent = 'Abra o CHECK-SE pelo novo ícone na tela inicial.';
+  });
+
+  window.addEventListener('pageshow', function () {
+    hideLaunchOverlay();
+    updateConnectionState();
+    if (serviceWorkerRegistration) {
+      serviceWorkerRegistration.update().catch(function () {
+        // A verificação silenciosa não interrompe o uso do portal.
+      });
+    }
   });
 
   openButton.href = APP_URL;
@@ -302,6 +322,7 @@
       ? 'Como instalar no iPad'
       : 'Como instalar no iPhone';
   } else if (isAndroid) {
-    installButtonText.textContent = 'Como instalar no Android';
+    installButtonText.textContent = 'Instalar CHECK-SE';
+    installHint.textContent = 'Toque para instalar. Se o Chrome não abrir automaticamente, mostramos os 3 passos.';
   }
 }());

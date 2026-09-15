@@ -12,6 +12,12 @@ formato `vX.Y.Z`.
 - Workflow manual e seguro para criação de tags de versão.
 - Formulários de Issue para relatos de problemas e sugestões de melhoria.
 
+### Alterado
+
+- Versão 1.2.5 com instalação mais direta no Android e instruções em três passos.
+- A tela de abertura agora é removida corretamente ao retornar ao portal.
+- A verificação de atualização também ocorre quando o usuário volta ao PWA.
+
 ## 1.1.0 - 2026-09-04
 
 > Nota: os arquivos já estão na versão 1.1.0, mas a tag `v1.1.0` ainda não foi

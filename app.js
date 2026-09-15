@@ -231,7 +231,7 @@
     installHint.textContent = 'Abra o CHECK-SE pelo novo ícone na tela inicial.';
   });
 
-  window.addEventListener('pageshow', function () {
+  function refreshPortalState() {
     hideLaunchOverlay();
     updateConnectionState();
     if (serviceWorkerRegistration) {
@@ -239,6 +239,11 @@
         // A verificação silenciosa não interrompe o uso do portal.
       });
     }
+  }
+
+  window.addEventListener('pageshow', refreshPortalState);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') refreshPortalState();
   });
 
   openButton.href = APP_URL;
@@ -286,13 +291,13 @@
       try {
         var dir = location.pathname.substring(0, location.pathname.lastIndexOf('/') + 1) || '/';
         var swUrl = dir + 'sw.js';
-        navigator.serviceWorker.register(swUrl, { scope: dir })
+        navigator.serviceWorker.register(swUrl, { scope: dir, updateViaCache: 'none' })
           .then(watchServiceWorkerRegistration)
           .catch(function () {
             // A página continua funcionando normalmente mesmo se o registro falhar.
           });
       } catch (e) {
-        navigator.serviceWorker.register('/CHECK-SE/sw.js', { scope: '/CHECK-SE/' })
+        navigator.serviceWorker.register('/CHECK-SE/sw.js', { scope: '/CHECK-SE/', updateViaCache: 'none' })
           .then(watchServiceWorkerRegistration)
           .catch(function () {
             // A página continua funcionando normalmente mesmo se o registro falhar.

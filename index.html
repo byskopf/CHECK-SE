@@ -3,6 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <style>html.installed-launch{visibility:hidden}</style>
+  <script>
+    (function () {
+      var standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+        (window.matchMedia && window.matchMedia('(display-mode: fullscreen)').matches) ||
+        navigator.standalone === true;
+      if (standalone && navigator.onLine !== false) {
+        document.documentElement.classList.add('installed-launch');
+        window.location.replace('https://script.google.com/macros/s/AKfycbx7ReYi1OoXTvO2e-FLXczg-Ube0WZcjJSWe8HGlWbQtUof1F-1dOUQ-kqrwZQPjb6D/exec');
+      }
+    }());
+  </script>
   <meta name="theme-color" content="#0b293d">
   <meta name="description" content="Gestão de pendências, correções e aprovações de obras e comissionamento de subestações.">
   <meta name="mobile-web-app-capable" content="yes">

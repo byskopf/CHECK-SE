@@ -126,9 +126,9 @@
 
   function openCheckSe(replaceHistory) {
     showLaunchOverlay();
-    window.setTimeout(function () {
-      navigateToCheckSe(replaceHistory);
-    }, prefersReducedMotion ? 0 : 180);
+    // Do not delay the Apps Script navigation; the old 180 ms timer only
+    // increased the time perceived by the user before the request started.
+    navigateToCheckSe(replaceHistory);
   }
 
   function instructionMarkup() {
@@ -249,8 +249,9 @@
   openButton.href = APP_URL;
   openButton.addEventListener('click', function (event) {
     if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button > 0) return;
-    event.preventDefault();
-    openCheckSe(false);
+    showLaunchOverlay();
+    // Keep the native link navigation: it starts immediately and remains the
+    // fallback if the script is unavailable or JavaScript is interrupted.
   });
 
   launchRetry.addEventListener('click', function () {

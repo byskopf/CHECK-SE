@@ -2,7 +2,7 @@
   "id": "./",
   "name": "CHECK-SELT",
   "short_name": "CHECK-SELT",
-  "description": "Obras e comissionamento de subestações, com gestão de pendências, correções e aprovações.",
+  "description": "Obras, comissionamento, pendências e localizadores de subestações e linhas de transmissão.",
   "lang": "pt-BR",
   "start_url": "./?origem=pwa",
   "scope": "./",
@@ -55,14 +55,14 @@
       "sizes": "1363x936",
       "type": "image/jpeg",
       "form_factor": "wide",
-      "label": "Portal oficial de acesso ao CHECK-SE"
+      "label": "Portal oficial de acesso ao CHECK-SELT"
     },
     {
       "src": "screenshot-narrow.jpg",
       "sizes": "520x830",
       "type": "image/jpeg",
       "form_factor": "narrow",
-      "label": "Instalação do CHECK-SE no celular"
+      "label": "Instalação do CHECK-SELT no celular"
     }
   ],
   "shortcuts": [

@@ -135,6 +135,22 @@ if (!configAppUrl) {
   }
 }
 
+/* O atalho de quem JÁ instalou é um location.replace dentro de uma verificação de
+   display-mode/standalone. A URL escrita ali é uma cópia solta do appUrl — e em 19/09/2026 essa
+   cópia ficou para trás: o portal continuava abrindo a implantação antiga, que hoje serve a
+   Central Administrativa em vez do aplicativo. Nada no validador pegava isso. Agora pega. */
+const redirecionamentos = [...indexHtml.matchAll(/location\.(?:replace|assign)\(\s*["'](https:\/\/script\.google\.com[^"']*)["']/gi)];
+if (redirecionamentos.length) {
+  if (!/display-mode:\s*standalone|navigator\.standalone/i.test(indexHtml)) {
+    failures.push('index.html só pode redirecionar ao Apps Script para quem já instalou (verificação de display-mode/standalone). Redirecionamento incondicional tira a instalação do ar.');
+  }
+  for (const achado of redirecionamentos) {
+    if (configAppUrl && achado[1] !== configAppUrl[1]) {
+      failures.push('A URL do redirecionamento em index.html está diferente do appUrl em app-config.js. Elas precisam ser iguais, senão o atalho de quem já instalou abre outra implantação.');
+    }
+  }
+}
+
 const packageJson = JSON.parse(await readFile('package.json', 'utf8').catch(() => '{}'));
 if (configVersion && packageJson.version !== configVersion[1]) {
   failures.push('A versão do package.json deve ser igual à versão de app-config.js.');
@@ -168,9 +184,23 @@ if (importedConfig && importedConfig[1] && configVersion && importedConfig[1] !=
   failures.push('A versão importada pelo sw.js deve corresponder à versão do app-config.js.');
 }
 
+/* A capa do compartilhamento pode trocar de nome (e deve, quando o conteúdo muda: WhatsApp e
+   Facebook guardam a capa por URL). O que não pode é apontar para arquivo que não existe, nem
+   as três tags divergirem entre si — aí o WhatsApp mostra uma capa e o Twitter outra. */
 const ogImageMatch = indexHtml.match(/<meta\s+property=['\"]og:image['\"]\s+content=['\"]([^'\"]+)['\"]/i);
-if (!ogImageMatch || !ogImageMatch[1].includes('/og-check-se-whatsapp.jpg')) {
-  failures.push('index.html deve usar og-check-se-whatsapp.jpg na tag og:image.');
+if (!ogImageMatch) {
+  failures.push('index.html deve declarar og:image.');
+} else {
+  const arquivoDaCapa = ogImageMatch[1].split(/[?#]/)[0].split('/').pop();
+  if (!await readFile(arquivoDaCapa).catch(() => null)) {
+    failures.push('A capa declarada em og:image (' + arquivoDaCapa + ') não existe no repositório.');
+  }
+  for (const outra of ['property="og:image:secure_url"', 'name="twitter:image"']) {
+    const m = indexHtml.match(new RegExp('<meta\\s+' + outra + '\\s+content=[\'\"]([^\'\"]+)[\'\"]', 'i'));
+    if (!m || m[1] !== ogImageMatch[1]) {
+      failures.push('A URL de ' + outra + ' deve ser igual à de og:image.');
+    }
+  }
 }
 for (const requiredMeta of [
   'property="og:image:type" content="image/jpeg"',
@@ -199,7 +229,8 @@ function jpegDimensions(buffer) {
   return null;
 }
 
-const ogImage = await readFile('og-check-se-whatsapp.jpg').catch(() => null);
+/* Confere a capa que está realmente em uso, não um nome fixo. */
+const ogImage = ogImageMatch ? await readFile(ogImageMatch[1].split(/[?#]/)[0].split('/').pop()).catch(() => null) : null;
 if (ogImage) {
   const dimensions = jpegDimensions(ogImage);
   if (!dimensions || dimensions.width !== 1200 || dimensions.height !== 630) {

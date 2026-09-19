@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "CHECK-SE",
-  "short_name": "CHECK-SE",
+  "name": "CHECK-SELT",
+  "short_name": "CHECK-SELT",
   "description": "Obras e comissionamento de subestações, com gestão de pendências, correções e aprovações.",
   "lang": "pt-BR",
   "start_url": "./?origem=pwa",
@@ -67,9 +67,9 @@
   ],
   "shortcuts": [
     {
-      "name": "Abrir CHECK-SE",
+      "name": "Abrir CHECK-SELT",
       "short_name": "Abrir",
-      "description": "Abrir o ambiente do CHECK-SE",
+      "description": "Abrir o ambiente do CHECK-SELT",
       "url": "./?abrir=1",
       "icons": [
         {

@@ -1,8 +1,8 @@
 {
   "name": "check-se",
-  "version": "1.2.7",
+  "version": "1.3.0",
   "private": true,
-  "description": "Portal PWA de instalação/abertura do CHECK-SE, publicado no GitHub Pages.",
+  "description": "Portal antigo do CHECK-SE: agora abre o aplicativo CHECK-SELT. Publicado no GitHub Pages.",
   "scripts": {
     "validate": "node scripts/validate-pwa.mjs"
   }

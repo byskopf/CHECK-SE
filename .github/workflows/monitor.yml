@@ -47,8 +47,8 @@ jobs:
           # Checagem por conteúdo, além do tamanho: garante que a página é
           # mesmo a tela do CHECK-SE, e não uma página de erro grande (ex.: um
           # stack trace) que por acaso passe do limiar de tamanho acima.
-          if ! echo "$body" | grep -q "CHECK-SE"; then
-            echo "::error::Resposta do Apps Script não contém 'CHECK-SE' - conteúdo inesperado."
+          if ! echo "$body" | grep -Eqi "CHECK-(SE|SELT|LT)"; then
+            echo "::error::Resposta do Apps Script não contém uma identificação CHECK-SE/CHECK-SELT/CHECK-LT - conteúdo inesperado."
             exit 1
           fi
 

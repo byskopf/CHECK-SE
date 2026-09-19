@@ -51,6 +51,13 @@ jobs:
             echo "::error::Resposta do Apps Script não contém uma identificação CHECK-SE/CHECK-SELT/CHECK-LT - conteúdo inesperado."
             exit 1
           fi
+          # Acentuação: uma republicação com codificação errada já quebrou todos os acentos
+          # (19/09/2026) e passou pelos checks, que eram todos em ASCII. Exigir uma palavra
+          # acentuada REAL pega isso; procurar só "Ã" não serve (REGIÃO contém "Ã" legítimo).
+          if ! echo "$body" | grep -q "pendências"; then
+            echo "::error::O app respondeu sem a palavra 'pendências' - provável acentuação corrompida (mojibake)."
+            exit 1
+          fi
 
       - name: Abrir/atualizar Issue de alerta
         if: failure()

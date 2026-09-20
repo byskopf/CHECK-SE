@@ -2,7 +2,7 @@
   "id": "./",
   "name": "CHECK-SELT",
   "short_name": "CHECK-SELT",
-  "description": "Obras, comissionamento, pendências e localizadores de subestações e linhas de transmissão.",
+  "description": "Obras, comissionamento, pendências e localizadores de subestações, linhas de transmissão e distribuição.",
   "lang": "pt-BR",
   "start_url": "./?origem=pwa",
   "scope": "./",

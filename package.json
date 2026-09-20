@@ -1,6 +1,6 @@
 {
   "name": "check-se",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "private": true,
   "description": "Portal antigo do CHECK-SE: agora abre o aplicativo CHECK-SELT. Publicado no GitHub Pages.",
   "scripts": {

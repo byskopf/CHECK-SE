@@ -3,7 +3,7 @@
 
   var config = window.CHECK_SE_CONFIG;
   if (!config || !config.version || !config.appUrl) {
-    throw new Error('Configuração do CHECK-SE ausente ou inválida.');
+    throw new Error('Configuração do CHECK-SELT ausente ou inválida.');
   }
   var PWA_VERSION = config.version;
   var APP_URL = config.appUrl;
@@ -59,12 +59,12 @@
     if (offline) {
       connectionText.textContent = 'Sem conexão. O portal continua disponível; o ambiente online pode exigir internet.';
       installHint.textContent = 'O portal está disponível neste aparelho. Para abrir o ambiente online, reconecte-se ou tente mesmo assim.';
-      openButtonText.textContent = 'Tentar abrir o CHECK-SE';
+      openButtonText.textContent = 'Tentar abrir o CHECK-SELT';
     } else if (isStandalone) {
       installHint.textContent = 'Aplicativo instalado neste aparelho.';
-      openButtonText.textContent = 'Abrir CHECK-SE';
+      openButtonText.textContent = 'Abrir CHECK-SELT';
     } else {
-      installHint.textContent = 'A instalação cria o ícone do CHECK-SE na tela inicial.';
+      installHint.textContent = 'A instalação cria o ícone do CHECK-SELT na tela inicial.';
       openButtonText.textContent = 'Continuar sem instalar';
     }
   }
@@ -153,7 +153,7 @@
     return '<p>Para instalar neste computador:</p>' +
       '<ol class="install-steps">' +
       '<li>Procure o ícone de instalação na barra de endereço.</li>' +
-      '<li>Escolha “Instalar CHECK-SE”.</li>' +
+      '<li>Escolha “Instalar CHECK-SELT”.</li>' +
       '<li>Confirme a instalação.</li>' +
       '</ol>';
   }
@@ -190,7 +190,7 @@
   window.addEventListener('beforeinstallprompt', function (event) {
     event.preventDefault();
     deferredInstallPrompt = event;
-    installButtonText.textContent = 'Instalar CHECK-SE';
+    installButtonText.textContent = 'Instalar CHECK-SELT';
     installHint.textContent = 'Toque no botão e confirme a instalação do ícone.';
   });
 
@@ -210,7 +210,7 @@
 
       if (choice && choice.outcome === 'accepted') {
         installButtonText.textContent = 'Instalação confirmada';
-        installHint.textContent = 'Abra o CHECK-SE pelo novo ícone na tela inicial.';
+        installHint.textContent = 'Abra o CHECK-SELT pelo novo ícone na tela inicial.';
       } else {
         installButtonText.textContent = 'Instalar aplicativo';
         installHint.textContent = 'A instalação foi cancelada. Você pode tentar novamente.';
@@ -228,7 +228,30 @@
     deferredInstallPrompt = null;
     installButtonText.textContent = 'Aplicativo instalado';
     installButton.disabled = true;
-    installHint.textContent = 'Abra o CHECK-SE pelo novo ícone na tela inicial.';
+    installHint.textContent = 'Abra o CHECK-SELT pelo novo ícone na tela inicial.';
+    setTimeout(openIfBecameApp, 700);
+    setTimeout(openIfBecameApp, 2500);
+  });
+
+  /* No desktop o Chrome MOVE a aba para a janela do app ao instalar, sem recarregar: o script
+     que abre o app instalado nao roda de novo e o usuario ficava vendo o portal dentro do app.
+     Por isso, quando a pagina vira janela de app, abre o ambiente na hora. No celular a aba
+     continua aba e o aviso de usar o novo icone segue valendo. */
+  function becameInstalledApp() {
+    return !!(window.matchMedia && (window.matchMedia('(display-mode: standalone)').matches ||
+      window.matchMedia('(display-mode: fullscreen)').matches ||
+      window.matchMedia('(display-mode: minimal-ui)').matches)) || navigator.standalone === true;
+  }
+  var alreadyOpened = false;
+  function openIfBecameApp() {
+    if (alreadyOpened) return;
+    if (navigator.onLine !== false && becameInstalledApp()) { alreadyOpened = true; openCheckSe(true); }
+  }
+  ['standalone', 'fullscreen', 'minimal-ui'].forEach(function (mode) {
+    if (!window.matchMedia) return;
+    var query = window.matchMedia('(display-mode: ' + mode + ')');
+    if (query.addEventListener) query.addEventListener('change', openIfBecameApp);
+    else if (query.addListener) query.addListener(openIfBecameApp);
   });
 
   function refreshPortalState() {
@@ -257,7 +280,7 @@
   launchRetry.addEventListener('click', function () {
     launchRetry.disabled = true;
     launchRetry.textContent = 'Tentando novamente…';
-    launchStatus.textContent = 'Tentando abrir o CHECK-SE novamente…';
+    launchStatus.textContent = 'Tentando abrir o CHECK-SELT novamente…';
     launchLoader.hidden = false;
     navigateToCheckSe(true);
   });
@@ -314,9 +337,9 @@
   if (isStandalone) {
     installButton.hidden = true;
     introText.textContent = navigator.onLine === false
-      ? 'O portal continua disponível, mas o ambiente online do CHECK-SE pode exigir conexão.'
-      : 'Aplicativo instalado. Abrindo o CHECK-SE…';
-    openButtonText.textContent = navigator.onLine === false ? 'Tentar abrir o CHECK-SE' : 'Abrir agora';
+      ? 'O portal continua disponível, mas o ambiente online do CHECK-SELT pode exigir conexão.'
+      : 'Aplicativo instalado. Abrindo o CHECK-SELT…';
+    openButtonText.textContent = navigator.onLine === false ? 'Tentar abrir o CHECK-SELT' : 'Abrir agora';
 
     if (navigator.onLine !== false) {
       openCheckSe(true);
@@ -328,7 +351,7 @@
       ? 'Como instalar no iPad'
       : 'Como instalar no iPhone';
   } else if (isAndroid) {
-    installButtonText.textContent = 'Instalar CHECK-SE';
+    installButtonText.textContent = 'Instalar CHECK-SELT';
     installHint.textContent = 'Toque para instalar. Se o Chrome não abrir automaticamente, mostramos os 3 passos.';
   }
 }());

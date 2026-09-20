@@ -6,7 +6,7 @@
    - Permite atualização assistida pelo portal
 */
 
-importScripts('app-config.js?v=1.4.0');
+importScripts('app-config.js?v=1.5.0');
 
 var PWA_VERSION = self.CHECK_SE_CONFIG && self.CHECK_SE_CONFIG.version;
 var ICON_VERSION = self.CHECK_SE_CONFIG && self.CHECK_SE_CONFIG.iconVersion || PWA_VERSION;

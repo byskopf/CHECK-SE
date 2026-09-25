@@ -6,6 +6,10 @@ formato `vX.Y.Z`.
 
 ## Não publicado
 
+### Alterado
+
+- Textos revisados para as ferramentas de 24/09/2026 (TC / TP, Localizador de Subestação, Antena Direção, Gibi / Cesto / Bastão) e nova imagem de prévia.
+
 ### Adicionado
 
 - Validação automática da estrutura, do manifesto e da sintaxe JavaScript do PWA.

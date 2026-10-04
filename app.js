@@ -6,7 +6,16 @@
     throw new Error('Configuração do CHECK-SELT ausente ou inválida.');
   }
   var PWA_VERSION = config.version;
-  var APP_URL = config.appUrl;
+  /* 04/10/2026 (V5.6): mesma regra do index.html: consulta de quem abriu, sem origem/abrir/de, mais a marca. */
+  function consultaDoApp() {
+    var partes = String(location.search || '').replace(/^\?/, '').split('&').filter(function (p) {
+      var k = p.split('=')[0];
+      return p && k !== 'origem' && k !== 'abrir' && k !== 'de';
+    });
+    partes.push('de=pwa-antigo');
+    return '?' + partes.join('&');
+  }
+  var APP_URL = config.appUrl + consultaDoApp();
   var deferredInstallPrompt = null;
   var serviceWorkerRegistration = null;
   var reloadAfterUpdate = false;

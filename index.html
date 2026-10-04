@@ -11,7 +11,14 @@
         navigator.standalone === true;
       if (standalone && navigator.onLine !== false) {
         document.documentElement.classList.add('installed-launch');
-        window.location.replace('https://script.google.com/macros/s/AKfycbzo_WN_PzoRhS-LhV070vmE8GDr1vJX9qEa1iqxADe6kVhNZa968olZLVVDAtObmvE/exec');
+        /* 04/10/2026 (V5.6): leva a consulta de quem abriu (sem origem/abrir/de, pares crus, sem o hash) mais a
+           marca de=pwa-antigo, para o app oferecer a ida ao checkselt.com. Mesma regra da função consultaDoApp(). */
+        var partes = String(location.search || '').replace(/^\?/, '').split('&').filter(function (p) {
+          var k = p.split('=')[0];
+          return p && k !== 'origem' && k !== 'abrir' && k !== 'de';
+        });
+        partes.push('de=pwa-antigo');
+        window.location.replace('https://script.google.com/macros/s/AKfycbzo_WN_PzoRhS-LhV070vmE8GDr1vJX9qEa1iqxADe6kVhNZa968olZLVVDAtObmvE/exec' + '?' + partes.join('&'));
       }
     }());
   </script>
@@ -22,14 +29,14 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="CHECK-SELT">
   <title>CHECK-SELT | Subestações, linhas e distribuição</title>
-  <link rel="canonical" href="https://byskopf.github.io/CHECK-SE/">
+  <link rel="canonical" href="https://checkselt.com/">
 
   <meta property="og:locale" content="pt_BR">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="CHECK-SELT">
   <meta property="og:title" content="CHECK-SELT | Subestações, linhas e distribuição">
   <meta property="og:description" content="Comissionamento e pendências de obras, localizadores (Pisca, Estrutura, Equipamento, Subestação), Gibi / Cesto / Bastão, TC / TP e Antena Direção.">
-  <meta property="og:url" content="https://byskopf.github.io/CHECK-SE/">
+  <meta property="og:url" content="https://checkselt.com/">
   <meta property="og:image" content="https://byskopf.github.io/CHECK-SE/og-check-selt-20260924.jpg">
   <meta property="og:image:secure_url" content="https://byskopf.github.io/CHECK-SE/og-check-selt-20260924.jpg">
   <meta property="og:image:type" content="image/jpeg">
@@ -110,7 +117,7 @@
   </style>
 <style>.portal-links{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:22px}.portal-links a,.portal-links button{color:#bdf3d9;font:inherit;font-size:.82rem;font-weight:600;background:none;border:1px solid rgba(92,224,168,.22);padding:10px 12px;border-radius:10px;text-decoration:none;cursor:pointer}.portal-links button[hidden]{display:none}.share-status{font-size:.82rem;line-height:1.5;color:#b8c7d5;text-align:center}.wordmark p{line-height:1.6;letter-spacing:.08em;font-weight:600}</style>
   <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"WebSite","name":"CHECK-SELT","url":"https://byskopf.github.io/CHECK-SE/","description":"CHECK-SELT: comissionamento de obras, pendências e ferramentas de campo para subestações, linhas de transmissão e distribuição, em um só aplicativo.","inLanguage":"pt-BR"}
+  {"@context":"https://schema.org","@type":"WebSite","name":"CHECK-SELT","url":"https://checkselt.com/","description":"CHECK-SELT: comissionamento de obras, pendências e ferramentas de campo para subestações, linhas de transmissão e distribuição, em um só aplicativo.","inLanguage":"pt-BR"}
   </script>
 </head>
 <body>
@@ -204,7 +211,7 @@
         <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6z"/><path class="accent" d="m9 12 2 2 4-4"/></svg>
         <span>Você será direcionado ao ambiente do CHECK-SELT.</span>
       </div>
-<div class="portal-links"><button type="button" hidden data-share-title="CHECK-SELT" data-share-url="https://byskopf.github.io/CHECK-SE/">Compartilhar CHECK-SELT</button></div>
+<div class="portal-links"><button type="button" hidden data-share-title="CHECK-SELT" data-share-url="https://checkselt.com/">Compartilhar CHECK-SELT</button></div>
       <p id="shareStatus" class="share-status" role="status" aria-live="polite"></p>
       <script src="share.js" defer></script>
     </section>

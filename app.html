@@ -9,7 +9,14 @@
   <!-- Porta de quem instalou o portal antigo em setembro/2026 (o ícone abre este arquivo). Antes levava ao
        endereço antigo da Central, que hoje só mostra um aviso; agora abre o aplicativo de campo. -->
   <script>
-    window.location.replace('https://script.google.com/macros/s/AKfycbzo_WN_PzoRhS-LhV070vmE8GDr1vJX9qEa1iqxADe6kVhNZa968olZLVVDAtObmvE/exec' + location.search);
+    /* 04/10/2026 (V5.6): leva a consulta de quem abriu (sem origem/abrir/de, pares crus, sem o hash) mais a
+       marca de=pwa-antigo, para o app oferecer a ida ao checkselt.com. Mesma regra da função consultaDoApp(). */
+    var partes = String(location.search || '').replace(/^\?/, '').split('&').filter(function (p) {
+      var k = p.split('=')[0];
+      return p && k !== 'origem' && k !== 'abrir' && k !== 'de';
+    });
+    partes.push('de=pwa-antigo');
+    window.location.replace('https://script.google.com/macros/s/AKfycbzo_WN_PzoRhS-LhV070vmE8GDr1vJX9qEa1iqxADe6kVhNZa968olZLVVDAtObmvE/exec' + '?' + partes.join('&'));
   </script>
 </head>
 <body>

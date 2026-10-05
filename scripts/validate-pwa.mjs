@@ -78,10 +78,15 @@ if (manifest) {
 }
 
 const indexHtml = await readFile('index.html', 'utf8').catch(() => '');
-for (const reference of ['manifest.json', 'app-config.js', 'app.js', 'styles.css']) {
+for (const reference of ['app-config.js', 'app.js', 'styles.css']) {
   if (!indexHtml.includes(reference)) {
     failures.push(`index.html não referencia ${reference}.`);
   }
+}
+/* 05/10/2026 (1.8.1): este portal antigo NÃO pode mais ser instalado (decisão do Luciano). O manifest.json fica só para
+   os ícones já instalados; a página não pode voltar a apontar para ele. */
+if (/rel=["']manifest/.test(indexHtml)) {
+  failures.push('index.html voltou a ter o manifesto: o portal antigo não pode ser instalável.');
 }
 
 const serviceWorker = await readFile('sw.js', 'utf8').catch(() => '');

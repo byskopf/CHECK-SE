@@ -19,6 +19,15 @@
         });
         partes.push('de=pwa-antigo');
         window.location.replace('https://script.google.com/macros/s/AKfycbzo_WN_PzoRhS-LhV070vmE8GDr1vJX9qEa1iqxADe6kVhNZa968olZLVVDAtObmvE/exec' + '?' + partes.join('&'));
+      } else {
+        /* 05/10/2026 (1.8.0): aberto no navegador, este endereço antigo não oferece mais o app antigo para instalar:
+           vai para o checkselt.com (com consulta, direto no app de lá; sem, a página inicial com "Baixar o aplicativo"). */
+        document.documentElement.classList.add('installed-launch');
+        var pares = String(location.search || '').replace(/^\?/, '').split('&').filter(function (p) {
+          var k = p.split('=')[0];
+          return p && k !== 'origem' && k !== 'abrir' && k !== 'de';
+        });
+        window.location.replace(pares.length ? 'https://checkselt.com/app/?' + pares.join('&') : 'https://checkselt.com/');
       }
     }());
   </script>

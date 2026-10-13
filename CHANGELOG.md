@@ -4,6 +4,12 @@ Todas as mudanças relevantes do PWA CHECK-SE serão registradas neste arquivo.
 O projeto usa versionamento semântico no formato `MAIOR.MENOR.CORREÇÃO` e tags no
 formato `vX.Y.Z`.
 
+## 1.8.2 - 13/10/2026
+
+### Removido
+
+- `app.html` (atalho repetido do `index.html`) e `LEIA-ME.txt` (anotações do desenvolvedor). O validador deixou de exigir o `app.html`.
+
 ## Não publicado
 
 ### Alterado

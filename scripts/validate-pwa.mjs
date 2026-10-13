@@ -3,7 +3,6 @@ import { constants } from 'node:fs';
 
 const requiredFiles = [
   'index.html',
-  'app.html',
   'app-config.js',
   'app.js',
   'styles.css',
